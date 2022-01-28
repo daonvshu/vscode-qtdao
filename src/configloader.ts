@@ -138,9 +138,9 @@ function resolveContent(object: any): Entity | null {
                         let field = fields[k];
                         let seq = readAttributeDefaultEmpty(field, 'seq');
                         if (seq.length === 0) {
-                            tbIndex.fields.push(field['_']);
+                            tbIndex.fields.push(field['_'] ?? field);
                         } else {
-                            tbIndex.fields.push(field['_'] + ' ' + seq);
+                            tbIndex.fields.push((field['_'] ?? field) + ' ' + seq);
                         }
                     }
                     table.indexes.push(tbIndex);

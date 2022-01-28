@@ -25,8 +25,8 @@ interface AttributeOption {
 }
 
 function readAttribute(object: any, option: AttributeOption): string {
-    let v = object['$'][option.key];
-    if (v) {
+    let v;
+    if (object['$'] && (v = object['$'][option.key])) {
         return v as string;
     }
     if (option.defaultValue !== undefined) {
@@ -170,6 +170,7 @@ function resolveContent(object: any): Entity | null {
         return entity;
     } catch (e) {
         vscode.window.showErrorMessage('Parse Error:' + (e as Error).message);
+        console.log((e as Error).stack);
     }
     return null;
 }

@@ -48,7 +48,7 @@ function readAttributeBool(object: any, key: string): boolean {
 }
 
 function resolveContent(object: any): Entity | null {
-    console.log(object);
+    //console.log(object);
     try {
         let entity = new Entity();
 
@@ -87,17 +87,17 @@ function resolveContent(object: any): Entity | null {
                     continue;
                 }
 
-				field.type = readAttribute(item, {key: 'type', defaultValue: 'int'});
-				field.note = readAttributeDefaultEmpty(item, 'note');
-				field.constraint = readAttributeDefaultEmpty(item, 'constraints');
-				field.defaultValue = readAttributeDefaultEmpty(item, 'default');
-				field.jsonKey = readAttributeDefaultEmpty(item, 'jsonkey');
-				field.jsonTimeFormat = readAttributeDefaultEmpty(item, 'jsontimeformat');
-				field.autoIncrement = readAttributeBool(item, 'autoincrement');
-				field.transient = readAttributeBool(item, 'transient');
-				//extra
-				field.bitSize = +readAttribute(item, {key: 'bitsize', defaultValue: '0'});
-				field.decimalPoint = +readAttribute(item, {key: 'decimal-d', defaultValue: '0'});
+                field.type = readAttribute(item, {key: 'type', defaultValue: 'int'});
+                field.note = readAttributeDefaultEmpty(item, 'note');
+                field.constraint = readAttributeDefaultEmpty(item, 'constraints');
+                field.defaultValue = readAttributeDefaultEmpty(item, 'default');
+                field.jsonKey = readAttributeDefaultEmpty(item, 'jsonkey');
+                field.jsonTimeFormat = readAttributeDefaultEmpty(item, 'jsontimeformat');
+                field.autoIncrement = readAttributeBool(item, 'autoincrement');
+                field.transient = readAttributeBool(item, 'transient');
+                //extra
+                field.bitSize = +readAttribute(item, {key: 'bitsize', defaultValue: '0'});
+                field.decimalPoint = +readAttribute(item, {key: 'decimal-d', defaultValue: '0'});
 
                 table.fields.push(field);
             }

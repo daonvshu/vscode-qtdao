@@ -6,3 +6,5 @@ node_modules
 testentity/*.h
 testentity/*.cpp
 testentity/*.json
+testentity/*.cmake
+testentity/*.pri

@@ -1,6 +1,6 @@
 export const templateDelegateCpp = `#include "$SqlType$EntityInclude.h"
 $EntityHeaders$
-#include "$DbLoaderPath$DbLoader.h"
+#include "DbLoader.h"
 namespace Dao$SqlType$ {
     void $SqlType$EntityDelegate::createEntityTables() {
         DbLoader::getClient().createTables<$SqlClientType$, $EntityList$>();

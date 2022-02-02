@@ -360,7 +360,7 @@ export class DatabaseGenerator {
             str += `name == "${this.getFieldNameInDatabase(field.name)}"`;
         }
         if (str.isEmpty()) {
-            return `Q_UNUSED(name);\n${this.tab6}return false`;
+            return `Q_UNUSED(name);\n${this.tab3}return false`;
         }
         return 'return ' + str;
     }

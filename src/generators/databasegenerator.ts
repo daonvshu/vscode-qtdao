@@ -176,7 +176,7 @@ export class DatabaseGenerator {
                 if (field.autoIncrement) {
                     continue;
                 }
-                if (field.defaultValue.isEmpty() && skipDefaultValue) {
+                if (field.defaultValue.isNotEmpty() && skipDefaultValue) {
                     continue;
                 }
             } else {
@@ -184,7 +184,7 @@ export class DatabaseGenerator {
                     continue;
                 }
             }
-            str += `${this.tab2}${this.constFieldDeclare(field)};\n`;
+            str += `${this.tab2}${this.constFieldDeclare(field)},\n`;
         }
         return str.substring(0, str.length - 2);
     }
@@ -203,7 +203,7 @@ export class DatabaseGenerator {
                 if (field.autoIncrement) {
                     continue;
                 }
-                if (field.defaultValue.isEmpty() && skipDefaultValue) {
+                if (field.defaultValue.isNotEmpty() && skipDefaultValue) {
                     continue;
                 }
             } else {
@@ -315,14 +315,14 @@ export class DatabaseGenerator {
     protected createPrimaryKeys(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient && field.constraint === 'primary key')
-            .map((field) => ` << ${this.getFieldNameInDatabase(field.name)}`)
+            .map((field) => ` << "${this.getFieldNameInDatabase(field.name)}"`)
             .merge();
     }
 
     protected createIndexFields(indexType: string = 'index'): string {
         const indexList = (index: Index): string => {
             return index.fields
-                .map((field) => ` << ${this.getFieldNameInDatabase(field)}`)
+                .map((field) => ` << "${this.getFieldNameInDatabase(field)}"`)
                 .merge();
         };
         return this.loadTb.indexes
@@ -453,6 +453,7 @@ export class DatabaseGenerator {
                     } else {
                         str += field.jsonTimeFormat;
                     }
+                    str += '");';
                     break;
                 case 'QVariant':
                     str += '");';

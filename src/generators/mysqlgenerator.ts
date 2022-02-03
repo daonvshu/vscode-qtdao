@@ -29,7 +29,7 @@ export class MysqlGeneator extends DatabaseGenerator {
                 //set tablename
                 .replaceMask('$TbName$', this.createTableName(this.entity.prefix))
                 //set engine
-                .replaceMask('$TbEngine$', this.createTableEngine(this.entity.prefix))
+                .replaceMask('$TbEngine$', this.createTableEngine(tb.engine))
                 //set fields
                 .replaceMask('$Fields$', this.createFields())
                 .replaceMask('$FieldsWithoutAuto$', this.createFieldsWithoutAutoIncrement())
@@ -145,7 +145,7 @@ export class MysqlGeneator extends DatabaseGenerator {
                 }
                 return `QDateTime::fromString("${defaultValue}")`;
             case 'char':
-                return `"${defaultValue}"`;
+                return `'${defaultValue}'`;
             case 'varchar':
             case 'tinytext':
             case 'text':
@@ -186,6 +186,15 @@ export class MysqlGeneator extends DatabaseGenerator {
         }
 
         switch(fieldType) {
+            case 'tinyint':
+            case 'smallint':
+            case 'mediumint':
+            case 'int':
+            case 'bigint':
+            case 'float':
+            case 'double':
+            case 'decimal':
+                return defaultValue;
             case 'date':
             case 'time':
                 if (defV === 'now') {
@@ -220,11 +229,11 @@ export class MysqlGeneator extends DatabaseGenerator {
                     return 'null';
                 }
                 if (defaultValue.startsWith('"')) {
-                    return defaultValue.replaceMask('"', "'");
+                    return defaultValue.replaceAll('"', "'");
                 }
                 return `'${defaultValue}'`;
         }
-        return defaultValue;
+        return 'null';
     }
 
     protected getDatabaseFieldType(fieldType: string): string {

@@ -1,6 +1,5 @@
 import { templateMysql } from "../templates/mysql";
 import { DatabaseGenerator } from "./databasegenerator";
-import { Table } from "./entity";
 import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
 

@@ -23,7 +23,7 @@ export class FileUtil {
         return this.getStrMd5(fileContent);
     }
 
-    static writeContentWithCheckHash(content: string, filePath: string) {
+    static writeContentWithCheckHash(content: string, filePath: string): boolean {
         var contentHash = this.getStrMd5('\ufeff' + content);
         var fileHash = this.getFileMd5(filePath);
         /*if (fs.existsSync(filePath)) {
@@ -32,6 +32,7 @@ export class FileUtil {
         if (contentHash !== fileHash) {
             this.writeUtf8ContentWithBomHeader(content, filePath);
         }
+        return contentHash !== fileHash;
     }
 
     static writeUtf8ContentWithBomHeader(content: string, filePath: string) {

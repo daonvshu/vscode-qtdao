@@ -24,7 +24,7 @@ export class DatabaseGenerator {
 
     //interfaces
 
-    public generate() {}
+    public generate(): boolean { return false; }
 
     protected getFieldCppType(fieldType: string): string { return ''; }
     protected getCppDefaultValueString(fieldType: string, defaultValue: string): string { return ''; }
@@ -539,9 +539,9 @@ export class DatabaseGenerator {
         return '';
     }
 
-    protected generateEntityDelegate(tbNames: string[]) {
+    protected generateEntityDelegate(tbNames: string[]): boolean {
         let header = templateDelegateHpp.replaceMask('$SqlType$', this.getSqlTypeName());
-        FileUtil.writeContentWithCheckHash(header, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.h`);
+        let changed = FileUtil.writeContentWithCheckHash(header, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.h`);
 
         let entityHeaders = '';
         let entityListStr = '';
@@ -556,10 +556,11 @@ export class DatabaseGenerator {
             .replaceMask('$EntityHeaders$', entityHeaders)
             .replaceMask('$EntityList$', entityListStr.substring(0, entityListStr.length - 2))
             ;
-        FileUtil.writeContentWithCheckHash(cpp, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.cpp`);
+        changed ||= FileUtil.writeContentWithCheckHash(cpp, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.cpp`);
+        return changed;
     }
 
-    protected generateConfigureFile(tbNames: string[]) {
+    protected generateConfigureFile(tbNames: string[]): boolean {
         //ouput pri configure file
         let priContent = 
 `# ----------------------------------------------------
@@ -570,7 +571,7 @@ export class DatabaseGenerator {
 HEADERS += ${tbNames.map((n) => `./${n}.h \\\n    `).merge()}./${this.getSqlTypeName()}EntityInclude.h
 SOURCES += ./${this.getSqlTypeName()}EntityInclude.cpp
 `;
-        FileUtil.writeContentWithCheckHash(priContent, `${this.outputPath}\\entity.pri`);
+let changed = FileUtil.writeContentWithCheckHash(priContent, `${this.outputPath}\\entity.pri`);
 
         //output cmake configure file
         let cmakeCOntent =
@@ -585,6 +586,7 @@ set(ENTITY_FILE_LIST
 
 ${tbNames.map((n) => `    $\{CMAKE_CURRENT_LIST_DIR\}/${n}.h\n`).merge()})`;
 
-        FileUtil.writeContentWithCheckHash(cmakeCOntent, `${this.outputPath}\\entity.cmake`);
+        changed ||= FileUtil.writeContentWithCheckHash(cmakeCOntent, `${this.outputPath}\\entity.cmake`);
+        return changed;
     }
 }

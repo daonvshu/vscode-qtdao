@@ -5,9 +5,10 @@ import { templateSqlite } from "../templates/sqlite";
 
 export class SqliteGenerator extends DatabaseGenerator {
 
-    public generate(): void {
+    public generate(): boolean {
         
         var tbNames = new Array<string>();
+        var changed = false;
         this.entity.tables.forEach((tb) => {
             tbNames.push(tb.name);
 
@@ -57,11 +58,12 @@ export class SqliteGenerator extends DatabaseGenerator {
                 .replaceMask('$DECLARE_META_TYPE$', this.createMetaType())
             ;
 
-            FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb));
+            changed ||= FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb));
         });
 
-        this.generateEntityDelegate(tbNames);
-        this.generateConfigureFile(tbNames);
+        changed ||= this.generateEntityDelegate(tbNames);
+        changed ||= this.generateConfigureFile(tbNames);
+        return changed;
     }
 
     protected getFieldCppType(fieldType: string): string {

@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { load } from './configloader';
-import { posix } from 'path';
 import { SqliteGenerator } from './generators/sqlitegenerator';
 import { MysqlGeneator } from './generators/mysqlgenerator';
 import { SqlServerGenerator } from './generators/sqlservergenerator';
@@ -24,16 +23,22 @@ export function generateEntityCode(filePath: string) {
             }*/
             let fileDir = path.dirname(filePath);
             if (entity !== null) {
+                let changed = false;
                 switch(entity.dbType) {
                     case 'sqlite':
-                        new SqliteGenerator(fileDir, entity).generate();
+                        changed = new SqliteGenerator(fileDir, entity).generate();
                         break;
                     case 'mysql':
-                        new MysqlGeneator(fileDir, entity).generate();
+                        changed = new MysqlGeneator(fileDir, entity).generate();
                         break;
                     case 'sqlserver':
-                        new SqlServerGenerator(fileDir, entity).generate();
+                        changed = new SqlServerGenerator(fileDir, entity).generate();
                         break;
+                }
+                if (!changed) {
+                    vscode.window.showWarningMessage('No changed!');
+                } else {
+                    vscode.window.showInformationMessage('Generated successfully!');
                 }
             }
 

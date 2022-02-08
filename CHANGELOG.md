@@ -1,9 +1,8 @@
-# Change Log
+# Changelog
 
-All notable changes to the "vscode-qtdao" extension will be documented in this file.
+### 0.0.2
+- Add generated finish message
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+### 0.0.1
+- Create pri script for qtcreator
+- Create cmake script for cmake project

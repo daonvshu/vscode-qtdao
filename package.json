@@ -7,6 +7,7 @@
 	"repository": {
 		"url": "https://github.com/daonvshu/vscode-qtdao"
 	},
+	"icon": "icon.png",
 	"author": {
 		"name": "daonvshu"
 	},

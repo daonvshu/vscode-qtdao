@@ -556,7 +556,7 @@ export class DatabaseGenerator {
             .replaceMask('$EntityHeaders$', entityHeaders)
             .replaceMask('$EntityList$', entityListStr.substring(0, entityListStr.length - 2))
             ;
-        changed ||= FileUtil.writeContentWithCheckHash(cpp, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.cpp`);
+        changed = FileUtil.writeContentWithCheckHash(cpp, `${this.outputPath}\\${this.getSqlTypeName()}EntityInclude.cpp`) || changed;
         return changed;
     }
 
@@ -586,7 +586,7 @@ set(ENTITY_FILE_LIST
 
 ${tbNames.map((n) => `    $\{CMAKE_CURRENT_LIST_DIR\}/${n}.h\n`).merge()})`;
 
-        changed ||= FileUtil.writeContentWithCheckHash(cmakeCOntent, `${this.outputPath}\\entity.cmake`);
+        changed = FileUtil.writeContentWithCheckHash(cmakeCOntent, `${this.outputPath}\\entity.cmake`) || changed;
         return changed;
     }
 }

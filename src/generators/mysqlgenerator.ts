@@ -60,11 +60,11 @@ export class MysqlGeneator extends DatabaseGenerator {
                 .replaceMask('$DECLARE_META_TYPE$', this.createMetaType())
             ;
 
-            changed ||= FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb));
+            changed = FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb)) || changed;
         });
 
-        changed ||= this.generateEntityDelegate(tbNames);
-        changed ||= this.generateConfigureFile(tbNames);
+        changed = this.generateEntityDelegate(tbNames) || changed;
+        changed = this.generateConfigureFile(tbNames) || changed;
         return changed;
     }
 

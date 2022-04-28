@@ -17,6 +17,8 @@ export class SqliteGenerator extends DatabaseGenerator {
             var header = templateSqlite
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //set property declare
+                .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
                 .replaceMask('$Members$', this.createFieldList())
                 //set constructor

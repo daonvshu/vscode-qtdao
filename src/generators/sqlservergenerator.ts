@@ -17,6 +17,8 @@ export class SqlServerGenerator extends DatabaseGenerator {
             var header = templateSqlServer
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //set property declare
+                .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
                 .replaceMask('$Members$', this.createFieldList())
                 //set constructor

@@ -17,6 +17,8 @@ export class MysqlGeneator extends DatabaseGenerator {
             var header = templateMysql
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //set property declare
+                .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
                 .replaceMask('$Members$', this.createFieldList())
                 //set constructor

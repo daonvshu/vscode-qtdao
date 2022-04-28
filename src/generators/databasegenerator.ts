@@ -100,6 +100,19 @@ export class DatabaseGenerator {
         return str;
     }
 
+    protected createPropertyDeclare(): string {
+        if (!this.loadTb.metaType) {
+            return '';
+        }
+        let str = 'Q_GADGET\n\n';
+
+        for (let field of this.loadTb.fields) {
+            str += `    Q_PROPERTY(${this.fieldDeclare(field)} MEMBER ${field.name})\n`;
+        }
+        str += `    Q_PROPERTY(QVariantMap extra MEMBER __extra)\n`;
+        return str;
+    }
+
     protected createConstruct(): string {
         
         let constructList = <string[]>[];

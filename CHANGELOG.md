@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.0.4
+- Change '__extra' type to QVariantMap
+- Add field property declarations to support the QML type system
+
 ### 0.0.3
 - Fix check file content changed
 

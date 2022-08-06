@@ -1,6 +1,9 @@
-export const templateDelegateCpp = `#include "$SqlType$EntityInclude.h"
+export const templateDelegateCpp = `#include "$DelegateHeader$"
 $EntityHeaders$
-#include "DbLoader.h"
+#include "dbloader.h"
+
+QTDAO_USING_NAMESPACE
+
 namespace Dao$SqlType$ {
     void $SqlType$EntityDelegate::createEntityTables() {
         DbLoader::getClient().createTables<$SqlClientType$, $EntityList$>();

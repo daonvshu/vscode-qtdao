@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.0.5
+- Output file names use lowercase
+- Add namespace 'dao' for classes in the library
+
 ### 0.0.4
 - Change '__extra' type to QVariantMap
 - Add field property declarations to support the QML type system

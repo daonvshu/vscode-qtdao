@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.0.6
+- Fix check mysql 'timestamp' field of default value
+- Update 'entity delegate' classes
+
 ### 0.0.5
 - Output file names use lowercase
 - Add namespace 'dao' for classes in the library

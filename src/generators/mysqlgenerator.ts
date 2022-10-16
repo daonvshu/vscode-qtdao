@@ -140,10 +140,11 @@ export class MysqlGeneator extends DatabaseGenerator {
                 if (defaultValue.contains('QDateTime')) {
                     return defaultValue;
                 }
-                if (defaultValue.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
+                defV = defaultValue.toUpperCase();
+                if (defV.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
                     return 'QDateTime()';
                 }
-                if (defaultValue.startsWith('CURRENT_TIMESTAMP')) {
+                if (defV.startsWith('CURRENT_TIMESTAMP')) {
                     return 'QDateTime::currentDateTime()';
                 }
                 return `QDateTime::fromString("${defaultValue}")`;
@@ -215,10 +216,11 @@ export class MysqlGeneator extends DatabaseGenerator {
                 if (defaultValue.contains('QDateTime')) {
                     return 'null';
                 }
-                if (defaultValue.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
+                defV = defaultValue.toUpperCase();
+                if (defV.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
                     return defaultValue;
                 }
-                if (defaultValue.startsWith('CURRENT_TIMESTAMP')) {
+                if (defV.startsWith('CURRENT_TIMESTAMP')) {
                     return defaultValue;
                 }
                 return `'${defaultValue}'`;

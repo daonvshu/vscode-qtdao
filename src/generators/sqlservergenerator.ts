@@ -58,6 +58,8 @@ export class SqlServerGenerator extends DatabaseGenerator {
                 .replaceMask('$ValuesWithAuto$', this.createValuesGetWithoutAutoIncrement())
                 //set value getter
                 .replaceMask('$GetValueByName$', this.createGetValueByName())
+                //operator equal
+                .replaceMask('$OperatorEqual$', this.createOperatorEqual())
                 //setter and getter
                 .replaceMask('$MemberGetterSetter$', this.createSetterGetter())
                 //set meta type

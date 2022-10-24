@@ -119,6 +119,10 @@ public:
         }
     };
 
+    bool operator==(const $ClassName$& other) const {
+        return $OperatorEqual$;
+    }
+
 public:$MemberGetterSetter$
     //set temp data
     inline void __putExtra(const QString& key, const QVariant& extra) {this->__extra.insert(key, extra);}

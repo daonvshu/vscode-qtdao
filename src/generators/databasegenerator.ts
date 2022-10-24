@@ -525,6 +525,17 @@ export class DatabaseGenerator {
         return str;
     }
 
+    protected createOperatorEqual(): string {
+        let str = this.loadTb.fields
+            .filter((field) => !field.transient && !field.autoIncrement)
+            .map((field) => `${field.name} == other.${field.name} &&\n${this.tab3}`)
+            .merge();
+        if (str.length !== 0) {
+            str = str.substring(0, str.length - 16);
+        }
+        return str;
+    }
+
     protected createSetterGetter(): string {
         return this.loadTb.fields
             .map((field) => {

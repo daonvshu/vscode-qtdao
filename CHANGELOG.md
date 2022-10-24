@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.0.7
+- Provide function 'operator==()' implementation
+
 ### 0.0.6
 - Fix check mysql 'timestamp' field of default value
 - Update 'entity delegate' classes

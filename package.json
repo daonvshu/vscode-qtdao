@@ -2,7 +2,7 @@
 	"name": "vscode-qtdao",
 	"displayName": "QtDao",
 	"description": "code generator plugin for qtdao",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"publisher": "daonvshu",
 	"repository": {
 		"url": "https://github.com/daonvshu/vscode-qtdao"
@@ -66,6 +66,7 @@
 		"webpack-cli": "^4.9.2"
 	},
 	"dependencies": {
+		"minimist": "^1.2.7",
 		"tslint": "^6.1.3",
 		"xml2js": "^0.4.23"
 	}

@@ -2,6 +2,7 @@ import { templateMysql } from "../templates/mysql";
 import { DatabaseGenerator } from "./databasegenerator";
 import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
+import { keywordsOrReservedWords } from "../utils/keywords";
 
 export class MysqlGeneator extends DatabaseGenerator {
 
@@ -261,5 +262,12 @@ export class MysqlGeneator extends DatabaseGenerator {
 
     protected getSqlClientTypeName(): string {
         return 'ClientMysql';
+    }
+
+    protected wrapWithCheckKeyworks(name: string): string {
+        if (keywordsOrReservedWords["sqlite"].contains(name.toUpperCase())) {
+            return `\`${name}\``;
+        }
+        return name;
     }
 }

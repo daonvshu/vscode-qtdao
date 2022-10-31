@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<dao prefix="ts_" db="sqlite">
+<dao db="sqlite">
   <tb name="SqliteTest1" declaremetatype="true">
     <item name="id" type="long" default="-1" constraints="primary key" note="主键" />
     <item name="name" type="text" constraints="primary key" default="text" note="复合主键"/>
@@ -59,5 +59,8 @@
     <item name="typevariant1" type="variant" default='"string"'/>
     <item name="typevariant2" type="variant" default="QTime::currentTime()"/>
     <item name="typevariant3" type="variant" default="QDateTime::currentDateTime()"/>
+  </tb>
+  <tb name="Database">
+    <item name="group" type="text" note="keywords test" />
   </tb>
 </dao>

@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.0.8
+- Fix lowercase name creator
+- Change attribute 'prefix' optional
+- Check field and escape the keywords
+
 ### 0.0.7
 - Provide function 'operator==()' implementation
 

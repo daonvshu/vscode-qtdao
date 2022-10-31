@@ -56,7 +56,7 @@ function resolveContent(object: any): Entity | null {
         if (!dao) {
             throw Error('the root name is not dao!');
         }
-        entity.prefix = readAttribute(dao, {error: '\'prefix\' not provided', key: 'prefix'});
+        entity.prefix = readAttributeDefaultEmpty(dao, 'prefix');
 
         entity.dbType = readAttribute(dao, {key: 'db'});
         if (['sqlite', 'mysql', 'sqlserver'].indexOf(entity.dbType) === -1) {

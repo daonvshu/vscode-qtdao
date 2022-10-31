@@ -2,6 +2,7 @@ import { DatabaseGenerator } from "./databasegenerator";
 import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
 import { templateSqlServer } from "../templates/sqlserver";
+import { keywordsOrReservedWords } from "../utils/keywords";
 
 export class SqlServerGenerator extends DatabaseGenerator {
 
@@ -283,5 +284,12 @@ export class SqlServerGenerator extends DatabaseGenerator {
 
     protected getSqlClientTypeName(): string {
         return 'ClientSqlServer';
+    }
+
+    protected wrapWithCheckKeyworks(name: string): string {
+        if (keywordsOrReservedWords["sqlite"].contains(name.toUpperCase())) {
+            return `[${name}]`;
+        }
+        return name;
     }
 }

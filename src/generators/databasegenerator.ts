@@ -43,7 +43,7 @@ export class DatabaseGenerator {
         for (var i = 0; i < str.length; i++) {
             var c = str.charAt(i);
             if (c >= 'A' && c <= 'Z') {
-                result += str.substring(lastIndex, i - lastIndex).toLowerCase() + '_';
+                result += str.substring(lastIndex, i).toLowerCase() + '_';
                 lastIndex = i;
             }
         }
@@ -56,7 +56,11 @@ export class DatabaseGenerator {
     }
 
     protected getFieldNameInDatabase(str: string, ignoreMix: boolean = false): string {
-        return this.lowerAndSplitWithUnderline(str);
+        return this.wrapWithCheckKeyworks(this.lowerAndSplitWithUnderline(str));
+    }
+
+    protected wrapWithCheckKeyworks(name: string): string {
+        return name;
     }
 
 
@@ -248,7 +252,7 @@ export class DatabaseGenerator {
     }
 
     protected createTableName(prefix: string): string {
-        return prefix + this.loadTb.name.toLowerCase();
+        return this.wrapWithCheckKeyworks(prefix + this.loadTb.name.toLowerCase());
     }
 
     protected createTableEngine(engine: string): string {

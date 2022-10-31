@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<dao prefix="ts_" db="sqlserver">
+<dao db="sqlserver">
   <tb name="SqlServerTest1">
     <item name="id" type="bigint" default="-1" constraints="primary key" note="主键"/>
     <item name="name" type="varchar" bitsize="100" constraints="primary key" default="text" note="复合主键"/>
@@ -128,5 +128,9 @@
     <item name="typevariant" type="sql_variant" default='"null"'/>
     <item name="typeuniqueidentifier" type="uniqueidentifier" default='"null"'/>
     <item name="typexml" type="xml" default='"null"'/>
+  </tb>
+
+  <tb name="Database">
+    <item name="group" type="text" note="keywords test" />
   </tb>
 </dao>

@@ -3,8 +3,9 @@ import { DatabaseGenerator } from "./databasegenerator";
 import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
 import { keywordsOrReservedWords } from "../utils/keywords";
+import { TypeReadInterface } from "./entity";
 
-export class MysqlGeneator extends DatabaseGenerator {
+export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterface {
 
     public generate(): boolean {
         
@@ -12,7 +13,8 @@ export class MysqlGeneator extends DatabaseGenerator {
         var changed = false;
         this.entity.tables.forEach((tb) => {
             tbNames.push(tb.name);
-
+            
+            tb.typeInterface = this;
             this.loadTb = tb;
 
             var header = templateMysql
@@ -73,7 +75,7 @@ export class MysqlGeneator extends DatabaseGenerator {
         return changed;
     }
 
-    protected getFieldCppType(fieldType: string): string {
+    getFieldCppType(fieldType: string): string {
         switch(fieldType) {
             case 'tinyint':
                 return 'char';
@@ -112,7 +114,7 @@ export class MysqlGeneator extends DatabaseGenerator {
         return 'unknown';
     }
 
-    protected getCppDefaultValueString(fieldType: string, defaultValue: string): string {
+    getCppDefaultValueString(fieldType: string, defaultValue: string): string {
         let defV = defaultValue.toLowerCase();
         if (defV === 'null') {
             return this.getFieldCppType(fieldType) + '()';
@@ -186,7 +188,7 @@ export class MysqlGeneator extends DatabaseGenerator {
         return defaultValue;
     }
 
-    protected getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
+    getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
         let defV = defaultValue.toLowerCase();
         if (defV === 'null') {
             return 'null';
@@ -244,7 +246,7 @@ export class MysqlGeneator extends DatabaseGenerator {
         return 'null';
     }
 
-    protected getDatabaseFieldType(fieldType: string): string {
+    getDatabaseFieldType(fieldType: string): string {
         return fieldType;
     }
 

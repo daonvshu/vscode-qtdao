@@ -3,8 +3,9 @@ import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
 import { templateSqlite } from "../templates/sqlite";
 import { keywordsOrReservedWords } from "../utils/keywords";
+import { TypeReadInterface } from "./entity";
 
-export class SqliteGenerator extends DatabaseGenerator {
+export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterface {
 
     public generate(): boolean {
         
@@ -13,6 +14,7 @@ export class SqliteGenerator extends DatabaseGenerator {
         this.entity.tables.forEach((tb) => {
             tbNames.push(tb.name);
 
+            tb.typeInterface = this;
             this.loadTb = tb;
 
             var header = templateSqlite
@@ -71,7 +73,7 @@ export class SqliteGenerator extends DatabaseGenerator {
         return changed;
     }
 
-    protected getFieldCppType(fieldType: string): string {
+    getFieldCppType(fieldType: string): string {
         switch(fieldType) {
             case 'int':
                 return 'int';
@@ -89,7 +91,7 @@ export class SqliteGenerator extends DatabaseGenerator {
         return 'unknown';
     }
 
-    protected getCppDefaultValueString(fieldType: string, defaultValue: string): string {
+    getCppDefaultValueString(fieldType: string, defaultValue: string): string {
 
         if (fieldType === 'variant') {
             return defaultValue;
@@ -127,7 +129,7 @@ export class SqliteGenerator extends DatabaseGenerator {
         return defaultValue;
     }
 
-    protected getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
+    getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
         let defV = defaultValue.toLowerCase();
         if (defV === 'null') {
             return 'null';
@@ -157,7 +159,7 @@ export class SqliteGenerator extends DatabaseGenerator {
         return 'null';
     }
 
-    protected getDatabaseFieldType(fieldType: string): string {
+    getDatabaseFieldType(fieldType: string): string {
         switch(fieldType) {
             case 'int':
             case 'long':

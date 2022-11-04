@@ -3,8 +3,9 @@ import { FileUtil } from "../utils/fileutil";
 import "../utils/string-extension.ts";
 import { templateSqlServer } from "../templates/sqlserver";
 import { keywordsOrReservedWords } from "../utils/keywords";
+import { TypeReadInterface } from "./entity";
 
-export class SqlServerGenerator extends DatabaseGenerator {
+export class SqlServerGenerator extends DatabaseGenerator implements TypeReadInterface {
 
     public generate(): boolean {
         
@@ -13,6 +14,7 @@ export class SqlServerGenerator extends DatabaseGenerator {
         this.entity.tables.forEach((tb) => {
             tbNames.push(tb.name);
 
+            tb.typeInterface = this;
             this.loadTb = tb;
 
             var header = templateSqlServer
@@ -75,7 +77,7 @@ export class SqlServerGenerator extends DatabaseGenerator {
         return changed;
     }
 
-    protected getFieldCppType(fieldType: string): string {
+    getFieldCppType(fieldType: string): string {
         switch(fieldType) {
             case 'tinyint':
                 return 'uchar';
@@ -125,7 +127,7 @@ export class SqlServerGenerator extends DatabaseGenerator {
         return 'unknown';
     }
 
-    protected getCppDefaultValueString(fieldType: string, defaultValue: string): string {
+    getCppDefaultValueString(fieldType: string, defaultValue: string): string {
 
         switch(fieldType) {
             case 'timestamp':
@@ -203,7 +205,7 @@ export class SqlServerGenerator extends DatabaseGenerator {
         return defaultValue;
     }
 
-    protected getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
+    getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string {
         
         switch(fieldType) {
             case 'timestamp':
@@ -266,7 +268,7 @@ export class SqlServerGenerator extends DatabaseGenerator {
         return 'null';
     }
 
-    protected getDatabaseFieldType(fieldType: string): string {
+    getDatabaseFieldType(fieldType: string): string {
         return fieldType;
     }
 

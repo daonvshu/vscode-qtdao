@@ -18,6 +18,9 @@ declare global {
 
         replaceAll(searchValue: string, replaceValue: string): string;
         replaceMask(mask: string, replaceValue: string): string;
+
+        snakeCase(): string;
+        pascalCase(): string;
     }
 }
 export{};

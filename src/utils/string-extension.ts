@@ -24,4 +24,22 @@ String.prototype.replaceMask = function (mask: string, replaceValue: string): st
     return this.replaceAll(`\\${mask.substring(0, mask.length - 1)}\\$`, replaceValue);
 };
 
+String.prototype.snakeCase = function(): string {
+    var result = '';
+    var lastIndex = 0;
+    for (var i = 0; i < this.length; i++) {
+        var c = this.charAt(i);
+        if (c >= 'A' && c <= 'Z') {
+            result += this.substring(lastIndex, i).toLowerCase() + '_';
+            lastIndex = i;
+        }
+    }
+    result += this.substring(lastIndex).toLowerCase();
+    return result;
+};
+
+String.prototype.pascalCase = function(): string {
+    return this.charAt(0).toUpperCase() + this.substring(1);
+};
+
 export{};

@@ -26,37 +26,14 @@ export class DatabaseGenerator {
 
     public generate(): boolean { return false; }
 
-    protected getFieldCppType(fieldType: string): string { return ''; }
-    protected getCppDefaultValueString(fieldType: string, defaultValue: string): string { return ''; }
-    protected getDatabaseDefaultValueString(fieldType: string, defaultValue: string): string { return ''; }
-    protected getDatabaseFieldType(fieldType: string): string { return ''; }
     protected getComment(note: string): string { return ''; }
     protected getAutoIncrementStatement(): string { return ''; }
 
     protected getSqlTypeName(): string { return ''; }
     protected getSqlClientTypeName(): string { return ''; }
 
-    
-    protected lowerAndSplitWithUnderline(str: string): string {
-        var result = '';
-        var lastIndex = 0;
-        for (var i = 0; i < str.length; i++) {
-            var c = str.charAt(i);
-            if (c >= 'A' && c <= 'Z') {
-                result += str.substring(lastIndex, i).toLowerCase() + '_';
-                lastIndex = i;
-            }
-        }
-        result += str.substring(lastIndex).toLowerCase();
-        return result;
-    }
-
-    protected upperFirstChar(str: string): string {
-        return str.charAt(0).toUpperCase() + str.substring(1);
-    }
-
     protected getFieldNameInDatabase(str: string, ignoreMix: boolean = false): string {
-        return this.wrapWithCheckKeyworks(this.lowerAndSplitWithUnderline(str));
+        return this.wrapWithCheckKeyworks(str.snakeCase());
     }
 
     protected wrapWithCheckKeyworks(name: string): string {
@@ -69,14 +46,6 @@ export class DatabaseGenerator {
     private tab3 = this.tab1 + this.tab2;
     private tab4 = this.tab2 + this.tab2;
     private tab6 = this.tab4 + this.tab2;
-
-    private fieldDeclare(field: Field): string {
-        return `${this.getFieldCppType(field.type)} ${field.name}`;
-    }
-
-    private constFieldDeclare(field: Field): string {
-        return `const ${this.getFieldCppType(field.type)}& ${field.name}`;
-    }
  
     protected createFieldList(): string {
         let transientFields = new Array<Field>();
@@ -91,13 +60,13 @@ export class DatabaseGenerator {
             if (field.constraint === 'primary key') {
                 this.currentPrimaryKeySize++;
             }
-            str += `    //${field.note}\n    ${this.fieldDeclare(field)};\n`;
+            str += `${this.tab1}//${field.note}\n    ${field.cppType} ${field.name};\n`;
         }
 
         if (transientFields.isNotEmpty()) {
             str += '\n';
             str += transientFields
-                .map((field) => `    ///transient ${field.note}\n    ${this.fieldDeclare(field)};\n`)
+                .map((field) => `${this.tab1}///transient ${field.note}\n    ${field.cppType} ${field.name};\n`)
                 .merge();
         }
         this.currentFieldSize = this.loadTb.fields.length - transientFields.length;
@@ -111,9 +80,9 @@ export class DatabaseGenerator {
         let str = 'Q_GADGET\n\n';
 
         for (let field of this.loadTb.fields) {
-            str += `    Q_PROPERTY(${this.fieldDeclare(field)} MEMBER ${field.name})\n`;
+            str += `${this.tab1}Q_PROPERTY(${field.cppType} ${field.name} MEMBER ${field.name})\n`;
         }
-        str += `    Q_PROPERTY(QVariantMap extra MEMBER __extra)\n`;
+        str += `${this.tab1}Q_PROPERTY(QVariantMap extra MEMBER __extra)\n`;
         return str;
     }
 
@@ -174,7 +143,7 @@ export class DatabaseGenerator {
                     continue;
                 }
             }
-            str += `${this.tab2}${field.name} = ${this.getCppDefaultValueString(field.type, field.defaultValue)};\n`;
+            str += `${this.tab2}${field.name} = ${field.cppDefault};\n`;
         }
         return str;
     }
@@ -201,7 +170,7 @@ export class DatabaseGenerator {
                     continue;
                 }
             }
-            str += `${this.tab2}${this.constFieldDeclare(field)},\n`;
+            str += `${this.tab2}const ${field.cppType}& ${field.name},\n`;
         }
         return str.substring(0, str.length - 2);
     }
@@ -236,14 +205,14 @@ export class DatabaseGenerator {
     protected createFieldDeclare(prefix: string): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `\n${this.tab2}dao::EntityField<${this.getFieldCppType(field.type)}> ${field.name} = dao::EntityField<${this.getFieldCppType(field.type)}>("${this.getFieldNameInDatabase(field.name)}", "${this.createTableName(prefix)}");`)
+            .map((field) => `\n${this.tab2}dao::EntityField<${field.cppType}> ${field.name} = dao::EntityField<${field.cppType}>("${this.getFieldNameInDatabase(field.name)}", "${this.createTableName(prefix)}");`)
             .merge();
     }
 
     protected createFieldDeclareReset(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `\n${this.tab3}${field.name} = dao::EntityField<${this.getFieldCppType(field.type)}>("${this.getFieldNameInDatabase(field.name)}", tbName);`)
+            .map((field) => `\n${this.tab3}${field.name} = dao::EntityField<${field.cppType}>("${this.getFieldNameInDatabase(field.name)}", tbName);`)
             .merge();
     }
 
@@ -286,7 +255,7 @@ export class DatabaseGenerator {
             if (field.transient) {
                 continue;
             }
-            str += `\n${this.tab4}<< QStringLiteral("${this.getFieldNameInDatabase(field.name)} ${this.getDatabaseFieldType(field.type)}`;
+            str += `\n${this.tab4}<< QStringLiteral("${this.getFieldNameInDatabase(field.name)} ${field.sqlType}`;
             if (field.bitSize !== 0) {
                 if (field.type === 'decimal' && field.decimalPoint !== 0) {
                     str += `(${field.bitSize},${field.decimalPoint})`;
@@ -311,7 +280,7 @@ export class DatabaseGenerator {
                 }
             }
             if (field.defaultValue.isNotEmpty() && !field.autoIncrement) {
-                let defaultStr = this.getDatabaseDefaultValueString(field.type, field.defaultValue);
+                let defaultStr = field.sqlDefault!;
                 if (defaultStr.isNotEmpty()) {
                     str += ' ';
                     if (field.constraint !== 'primary key') {
@@ -406,13 +375,13 @@ export class DatabaseGenerator {
         if (fields.isEmpty()) {
             return `Q_UNUSED(entity);\n${this.tab3}Q_UNUSED(id);`;
         }
-        return `entity.${fields[0].name} = id.value<${this.getFieldCppType(fields[0].type)}>();`;
+        return `entity.${fields[0].name} = id.value<${fields[0].cppType}>();`;
     }
 
     protected createBindValue(): string {
         let bindStr = this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => ` else if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}entity.${field.name} = value.value<${this.getFieldCppType(field.type)}>();\n${this.tab3}}`)
+            .map((field) => ` else if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}entity.${field.name} = value.value<${field.cppType}>();\n${this.tab3}}`)
             .merge();
         if (bindStr.isNotEmpty()) {
             bindStr += ` else {\n${this.tab4}entity.__putExtra(target, value);\n${this.tab3}}`;
@@ -427,7 +396,7 @@ export class DatabaseGenerator {
                 continue;
             }
             str += `\n${this.tab3}entity.${field.name} = `;
-            let cppType = this.getFieldCppType(field.type);
+            let cppType = field.cppType;
             switch(cppType) {
                 case 'QByteArray':
                     str += 'QByteArray::fromBase64(object.value("';
@@ -476,7 +445,7 @@ export class DatabaseGenerator {
                     str += '");';
                     break;
                 default:
-                    str += `").toVariant().value<${this.getFieldCppType(field.type)}>();`;
+                    str += `").toVariant().value<${field.cppType}>();`;
             }
         }
         return str;
@@ -495,7 +464,7 @@ export class DatabaseGenerator {
                 str += field.jsonKey;
             }
             str += '", ';
-            let cppType = this.getFieldCppType(field.type);
+            let cppType = field.cppType!;
             switch(cppType) {
                 case 'QByteArray':
                     str += `QString::fromLatin1(entity.${field.name}.toBase64())`;
@@ -548,13 +517,13 @@ export class DatabaseGenerator {
                 if (field.note.isNotEmpty()) {
                     str += `set ${field.note}`;
                 }
-                str += `\n${this.tab1}inline void set${this.upperFirstChar(field.name)}(${this.constFieldDeclare(field)}) {this->${field.name} = ${field.name};}`;
+                str += `\n${this.tab1}inline void set${field.name.pascalCase()}(const ${field.cppType}& ${field.name}) {this->${field.name} = ${field.name};}`;
                 //getter
                 str += `\n${this.tab1}//`;
                 if (field.note.isNotEmpty()) {
                     str += `get ${field.note}`;
                 }
-                str += `\n${this.tab1}inline ${this.getFieldCppType(field.type)} get${this.upperFirstChar(field.name)}() const {return ${field.name};}`;
+                str += `\n${this.tab1}inline ${field.cppType} get${field.name.pascalCase()}() const {return ${field.name};}`;
                 
                 return str;
             }).merge();

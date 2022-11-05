@@ -40,12 +40,36 @@ export class DatabaseGenerator {
         return name;
     }
 
+    protected serializableEntityFieldName(field: Field): string {
+        if (field.useCustomType) {
+            return `dao::serializeCustomTypeToBinary(entity.${field.name})`;
+        }
+        return `entity.${field.name}`;
+    }
+
 
     private tab1 = '    ';
     private tab2 = this.tab1 + this.tab1;
     private tab3 = this.tab1 + this.tab2;
     private tab4 = this.tab2 + this.tab2;
     private tab6 = this.tab4 + this.tab2;
+
+    protected createCustomTypeHeaders(): string {
+        let newArr: string[] = [];
+        this.loadTb.fields.forEach((field) => {
+            field.typeHeaders.forEach((h) => {
+                if (newArr.indexOf(h) === -1) {
+                    newArr.push(h);
+                }
+            });
+        });
+        if (newArr.length === 0) {
+            return '';
+        }
+        return newArr
+            .map((e) => e.endsWith(".h") ? `#include "${e}"` : `#include <${e}>`)
+            .join('\n') + '\n#include "utils/serializing.h"\n';
+    }
  
     protected createFieldList(): string {
         let transientFields = new Array<Field>();
@@ -354,7 +378,7 @@ export class DatabaseGenerator {
     protected createValuesGetWithoutAutoIncrement(): string {
         let getStr = this.loadTb.fields
             .filter((field) => !field.transient && !field.autoIncrement)
-            .map((field) => `\n${this.tab4}<< entity.${field.name}`)
+            .map((field) => `\n${this.tab4}<< ${this.serializableEntityFieldName(field)}`)
             .merge();
         if (getStr.isEmpty()) {
             return `Q_UNUSED(entity);\n${this.tab6}return QVariantList()`;
@@ -365,7 +389,7 @@ export class DatabaseGenerator {
     protected createGetValueByName(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}return entity.${field.name};\n${this.tab3}}\n${this.tab3}`)
+            .map((field) => `if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}return ${this.serializableEntityFieldName(field)};\n${this.tab3}}\n${this.tab3}`)
             .merge() + 'return entity.__extra.value(target);';
     }
 
@@ -379,9 +403,15 @@ export class DatabaseGenerator {
     }
 
     protected createBindValue(): string {
+        let checkSerialzable = (field: Field): string => {
+            if (field.useCustomType) {
+                return `dao::deserializeBinaryToCustomType<${field.cppType}>(value.toByteArray())`;
+            }
+            return `value.value<${field.cppType}>()`;
+        };
         let bindStr = this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => ` else if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}entity.${field.name} = value.value<${field.cppType}>();\n${this.tab3}}`)
+            .map((field) => ` else if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}entity.${field.name} = ${checkSerialzable(field)};\n${this.tab3}}`)
             .merge();
         if (bindStr.isNotEmpty()) {
             bindStr += ` else {\n${this.tab4}entity.__putExtra(target, value);\n${this.tab3}}`;
@@ -397,21 +427,25 @@ export class DatabaseGenerator {
             }
             str += `\n${this.tab3}entity.${field.name} = `;
             let cppType = field.cppType;
-            switch(cppType) {
-                case 'QByteArray':
-                    str += 'QByteArray::fromBase64(object.value("';
-                    break;
-                case 'QDate':
-                    str += 'QDate::fromString(object.value("';
-                    break;
-                case 'QDateTime':
-                    str += 'QDateTime::fromString(object.value("';
-                    break;
-                case 'QTime':
-                    str += 'QTime::fromString(object.value("';
-                    break;
-                default:
-                    str += 'object.value("';
+            if (field.useCustomType) {
+                str += `dao::deserializeBinaryToCustomType<${cppType}>(QByteArray::fromBase64(object.value("`;
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += 'QByteArray::fromBase64(object.value("';
+                        break;
+                    case 'QDate':
+                        str += 'QDate::fromString(object.value("';
+                        break;
+                    case 'QDateTime':
+                        str += 'QDateTime::fromString(object.value("';
+                        break;
+                    case 'QTime':
+                        str += 'QTime::fromString(object.value("';
+                        break;
+                    default:
+                        str += 'object.value("';
+                }
             }
 
             if (field.jsonKey.isEmpty()) {
@@ -419,33 +453,37 @@ export class DatabaseGenerator {
             } else {
                 str += field.jsonKey;
             }
-
-            switch(cppType) {
-                case 'QByteArray':
-                    str += '").toString().toLatin1());';
-                    break;
-                case 'QDate':
-                case 'QDateTime':
-                case 'QTime':
-                    str += '").toString(), "';
-                    if (field.jsonTimeFormat.isEmpty()) {
-                        if (cppType === 'QDate') {
-                            str += 'yyyy-MM-dd';
-                        } else if (cppType === 'QTime') {
-                            str += 'HH:mm:ss';
+            
+            if (field.useCustomType) {
+                str += '").toString().toLatin1()));';
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += '").toString().toLatin1());';
+                        break;
+                    case 'QDate':
+                    case 'QDateTime':
+                    case 'QTime':
+                        str += '").toString(), "';
+                        if (field.jsonTimeFormat.isEmpty()) {
+                            if (cppType === 'QDate') {
+                                str += 'yyyy-MM-dd';
+                            } else if (cppType === 'QTime') {
+                                str += 'HH:mm:ss';
+                            } else {
+                                str += 'yyyy-MM-dd HH:mm:ss';
+                            }
                         } else {
-                            str += 'yyyy-MM-dd HH:mm:ss';
+                            str += field.jsonTimeFormat;
                         }
-                    } else {
-                        str += field.jsonTimeFormat;
-                    }
-                    str += '");';
-                    break;
-                case 'QVariant':
-                    str += '");';
-                    break;
-                default:
-                    str += `").toVariant().value<${field.cppType}>();`;
+                        str += '");';
+                        break;
+                    case 'QVariant':
+                        str += '");';
+                        break;
+                    default:
+                        str += `").toVariant().value<${field.cppType}>();`;
+                }
             }
         }
         return str;
@@ -465,33 +503,37 @@ export class DatabaseGenerator {
             }
             str += '", ';
             let cppType = field.cppType!;
-            switch(cppType) {
-                case 'QByteArray':
-                    str += `QString::fromLatin1(entity.${field.name}.toBase64())`;
-                    break;
-                case 'QVariant':
-                    str += `QJsonValue::fromVariant(entity.${field.name})`;
-                    break;
-                default:
-                    str += `entity.${field.name}`;
-                    if (['QDate', 'QTime', 'QDateTime'].indexOf(cppType) !== -1) {
-                        str += '.toString("';
-                        if (field.jsonTimeFormat.isEmpty()) {
-                            if (cppType === 'QDate') {
-                                str += 'yyyy-MM-dd';
-                            } else if (cppType === 'QTime') {
-                                str += 'HH:mm:ss';
+            if (field.useCustomType) {
+                str += `QString::fromLatin1(dao::serializeCustomTypeToBinary(entity.${field.name}).toBase64())`;
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += `QString::fromLatin1(entity.${field.name}.toBase64())`;
+                        break;
+                    case 'QVariant':
+                        str += `QJsonValue::fromVariant(entity.${field.name})`;
+                        break;
+                    default:
+                        str += `entity.${field.name}`;
+                        if (['QDate', 'QTime', 'QDateTime'].indexOf(cppType) !== -1) {
+                            str += '.toString("';
+                            if (field.jsonTimeFormat.isEmpty()) {
+                                if (cppType === 'QDate') {
+                                    str += 'yyyy-MM-dd';
+                                } else if (cppType === 'QTime') {
+                                    str += 'HH:mm:ss';
+                                } else {
+                                    str += 'yyyy-MM-dd HH:mm:ss';
+                                }
                             } else {
-                                str += 'yyyy-MM-dd HH:mm:ss';
+                                str += field.jsonTimeFormat;
                             }
-                        } else {
-                            str += field.jsonTimeFormat;
+                            str += '")';
+                        } else if (cppType === 'QChar') {
+                            str += '.toLatin1()';
                         }
-                        str += '")';
-                    } else if (cppType === 'QChar') {
-                        str += '.toLatin1()';
-                    }
-                    break;
+                        break;
+                }
             }
             str += ');';
         }

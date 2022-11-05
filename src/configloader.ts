@@ -88,6 +88,8 @@ function resolveContent(object: any): Entity | null {
                 }
 
                 field.type = readAttribute(item, {key: 'type', defaultValue: 'int'});
+                field.customTypeName = readAttributeDefaultEmpty(item, 'customtype');
+                field.analyzeCustomType();
                 field.note = readAttributeDefaultEmpty(item, 'note');
                 field.constraint = readAttributeDefaultEmpty(item, 'constraints');
                 field.defaultValue = readAttributeDefaultEmpty(item, 'default');

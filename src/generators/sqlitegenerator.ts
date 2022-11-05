@@ -20,6 +20,8 @@ export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterf
             var header = templateSqlite
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //custom type headers
+                .replaceMask('$CustomTypeHeaders$', this.createCustomTypeHeaders())
                 //set property declare
                 .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
@@ -168,6 +170,10 @@ export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterf
                 return 'blob';
         }
         return fieldType;
+    }
+
+    getBinaryType(): string {
+        return 'blob';
     }
 
     protected getComment(note: string): string {

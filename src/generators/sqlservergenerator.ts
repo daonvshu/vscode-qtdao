@@ -20,6 +20,8 @@ export class SqlServerGenerator extends DatabaseGenerator implements TypeReadInt
             var header = templateSqlServer
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //custom type headers
+                .replaceMask('$CustomTypeHeaders$', this.createCustomTypeHeaders())
                 //set property declare
                 .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
@@ -270,6 +272,10 @@ export class SqlServerGenerator extends DatabaseGenerator implements TypeReadInt
 
     getDatabaseFieldType(fieldType: string): string {
         return fieldType;
+    }
+
+    getBinaryType(): string {
+        return 'binary';
     }
 
     protected getComment(note: string): string {

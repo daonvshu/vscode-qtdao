@@ -20,6 +20,8 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
             var header = templateMysql
                 //set classname
                 .replaceMask('$ClassName$', tb.name)
+                //custom type headers
+                .replaceMask('$CustomTypeHeaders$', this.createCustomTypeHeaders())
                 //set property declare
                 .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
                 //set field list
@@ -248,6 +250,10 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
 
     getDatabaseFieldType(fieldType: string): string {
         return fieldType;
+    }
+
+    getBinaryType(): string {
+        return 'blob';
     }
 
     protected getComment(note: string): string {

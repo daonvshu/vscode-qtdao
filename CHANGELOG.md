@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.0.9
+- Add custom type serialization operations
+
 ### 0.0.8
 - Fix lowercase name creator
 - Change attribute 'prefix' optional

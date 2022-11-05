@@ -8,7 +8,7 @@ export const templateSqlServer = `/*********************************************
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qjsonobject.h>
-
+$CustomTypeHeaders$
 #include "condition/entityfield.h"
 
 class $ClassName$ {

@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.0
+- Fix keyword field operations in index/bindValue/json
+
 ### 0.0.9
 - Add custom type serialization operations
 

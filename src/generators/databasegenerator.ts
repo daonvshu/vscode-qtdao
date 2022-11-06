@@ -33,7 +33,12 @@ export class DatabaseGenerator {
     protected getSqlClientTypeName(): string { return ''; }
 
     protected getFieldNameInDatabase(str: string, ignoreMix: boolean = false): string {
-        return this.wrapWithCheckKeyworks(str.snakeCase());
+        let words = str.snakeCase().split(' ');
+        if (words.length === 1) {
+            return this.wrapWithCheckKeyworks(words[0]);
+        }
+        words[0] = this.wrapWithCheckKeyworks(words[0]);
+        return words.join(' ');
     }
 
     protected wrapWithCheckKeyworks(name: string): string {
@@ -389,7 +394,7 @@ export class DatabaseGenerator {
     protected createGetValueByName(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}return ${this.serializableEntityFieldName(field)};\n${this.tab3}}\n${this.tab3}`)
+            .map((field) => `if (target == "${field.name.snakeCase()}") {\n${this.tab4}return ${this.serializableEntityFieldName(field)};\n${this.tab3}}\n${this.tab3}`)
             .merge() + 'return entity.__extra.value(target);';
     }
 
@@ -411,7 +416,7 @@ export class DatabaseGenerator {
         };
         let bindStr = this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => ` else if (target == "${this.getFieldNameInDatabase(field.name)}") {\n${this.tab4}entity.${field.name} = ${checkSerialzable(field)};\n${this.tab3}}`)
+            .map((field) => ` else if (target == "${field.name.snakeCase()}") {\n${this.tab4}entity.${field.name} = ${checkSerialzable(field)};\n${this.tab3}}`)
             .merge();
         if (bindStr.isNotEmpty()) {
             bindStr += ` else {\n${this.tab4}entity.__putExtra(target, value);\n${this.tab3}}`;
@@ -449,7 +454,7 @@ export class DatabaseGenerator {
             }
 
             if (field.jsonKey.isEmpty()) {
-                str += this.getFieldNameInDatabase(field.name, true);
+                str += field.name.snakeCase();
             } else {
                 str += field.jsonKey;
             }
@@ -497,7 +502,7 @@ export class DatabaseGenerator {
             }
             str += `\n${this.tab3}object.insert("`;
             if (field.jsonKey.isEmpty()) {
-                str += this.getFieldNameInDatabase(field.name, true);
+                str += field.name.snakeCase();
             } else {
                 str += field.jsonKey;
             }

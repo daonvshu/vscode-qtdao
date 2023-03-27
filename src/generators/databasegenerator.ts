@@ -234,14 +234,14 @@ export class DatabaseGenerator {
     protected createFieldDeclare(prefix: string): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `\n${this.tab2}dao::EntityField<${field.cppType}> ${field.name} = dao::EntityField<${field.cppType}>("${this.getFieldNameInDatabase(field.name)}", "${this.createTableName(prefix)}");`)
+            .map((field) => `\n${this.tab2}dao::EntityField<${field.cppType}> ${field.name}{"${this.getFieldNameInDatabase(field.name)}", "${this.createTableName(prefix)}", ${field.useCustomType}};`)
             .merge();
     }
 
     protected createFieldDeclareReset(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient)
-            .map((field) => `\n${this.tab3}${field.name} = dao::EntityField<${field.cppType}>("${this.getFieldNameInDatabase(field.name)}", tbName);`)
+            .map((field) => `\n${this.tab3}${field.name}.resetTb(tbName);`)
             .merge();
     }
 

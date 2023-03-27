@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.1
+- Update entity fields initialize
+
 ### 0.1.0
 - Fix keyword field operations in index/bindValue/json
 

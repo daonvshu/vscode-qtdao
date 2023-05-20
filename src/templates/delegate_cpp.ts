@@ -10,11 +10,11 @@ QTDAO_USING_NAMESPACE
 
 namespace Dao$SqlType$ {
     void $SqlType$EntityDelegate::createEntityTables() {
-        globalConfig->getClient()->createTables<$SqlClientType$, $EntityList$>();
+$TableCreate$
     }
 
-    void $SqlType$EntityDelegate::entityTablesUpgrade() {
-        globalConfig->getClient()->tablesUpgrade<$SqlClientType$, $EntityList$>();
+    void $SqlType$EntityDelegate::entityTablesUpgrade(int oldVer, int newVer) {
+$TableUpgrade$
     }
 
     const int entity$SqlType$DelegateId = qRegisterMetaType<$SqlType$EntityDelegate*>();

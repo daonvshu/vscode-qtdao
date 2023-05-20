@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.2
+- Removed the 'getFieldsWithoutTimestamp' function in the entity class when using SQLServer.
+- Updated the entity delegate. This update requires QtDao v2.1.0 or higher.
+- Added a '.gitignore' file in the generated directory to ignore all generated files.
+
 ### 0.1.1
 - Update entity fields initialize
 

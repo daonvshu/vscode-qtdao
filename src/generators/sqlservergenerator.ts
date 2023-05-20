@@ -38,7 +38,6 @@ export class SqlServerGenerator extends DatabaseGenerator implements TypeReadInt
                 //set fields
                 .replaceMask('$Fields$', this.createFields())
                 .replaceMask('$FieldsWithoutAuto$', this.createFieldsWithoutAutoIncrement())
-                .replaceMask('$FieldsWithoutTimestamp$', this.createFieldsWithoutTimestamp())
                 //set database type
                 .replaceMask('$FieldType$', this.createDatabaseType())
                 //set primary keys
@@ -76,6 +75,7 @@ export class SqlServerGenerator extends DatabaseGenerator implements TypeReadInt
 
         changed = this.generateEntityDelegate(tbNames) || changed;
         changed = this.generateConfigureFile(tbNames) || changed;
+        changed = this.generateGitIgnoreFile(tbNames) || changed;
         return changed;
     }
 

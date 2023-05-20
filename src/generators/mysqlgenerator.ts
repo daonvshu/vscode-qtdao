@@ -74,6 +74,7 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
 
         changed = this.generateEntityDelegate(tbNames) || changed;
         changed = this.generateConfigureFile(tbNames) || changed;
+        changed = this.generateGitIgnoreFile(tbNames) || changed;
         return changed;
     }
 

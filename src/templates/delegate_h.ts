@@ -11,11 +11,11 @@ namespace Dao$SqlType$ {
         Q_OBJECT
 
     public:
-        Q_INVOKABLE explicit $SqlType$EntityDelegate() {}
+        Q_INVOKABLE explicit $SqlType$EntityDelegate() = default;
 
         Q_INVOKABLE void createEntityTables();
 
-        Q_INVOKABLE void entityTablesUpgrade();
+        Q_INVOKABLE void entityTablesUpgrade(int oldVer, int newVer);
     };
 }
 Q_DECLARE_METATYPE(Dao$SqlType$::$SqlType$EntityDelegate*);`;

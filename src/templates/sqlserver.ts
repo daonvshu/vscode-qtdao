@@ -53,10 +53,6 @@ public:
             return QStringList()$FieldsWithoutAuto$;
         }
 
-        static QStringList getFieldsWithoutTimestamp() {
-            return QStringList()$FieldsWithoutTimestamp$;
-        }
-
         static QStringList getFieldsType() {
             return QStringList() $FieldType$;
         }

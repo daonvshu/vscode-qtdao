@@ -5,6 +5,7 @@ import "../utils/string-extension.ts";
 import { templateDelegateHpp } from "../templates/delegate_h";
 import { FileUtil } from "../utils/fileutil";
 import { templateDelegateCpp } from "../templates/delegate_cpp";
+import { templateGitIgnore } from "../templates/gitignore";
 
 export class DatabaseGenerator {
 
@@ -267,13 +268,6 @@ export class DatabaseGenerator {
     protected createFieldsWithoutAutoIncrement(): string {
         return this.loadTb.fields
             .filter((field) => !field.transient && !field.autoIncrement)
-            .map((field) => `\n${this.tab4}<< "${this.getFieldNameInDatabase(field.name)}"`)
-            .merge();
-    }
-
-    protected createFieldsWithoutTimestamp(): string {
-        return this.loadTb.fields
-            .filter((field) => !field.transient && field.type !== 'timestamp')
             .map((field) => `\n${this.tab4}<< "${this.getFieldNameInDatabase(field.name)}"`)
             .merge();
     }
@@ -588,10 +582,12 @@ export class DatabaseGenerator {
         let changed = FileUtil.writeContentWithCheckHash(header, `${this.outputPath}\\${this.getSqlTypeName().toLowerCase()}entityinclude.h`);
 
         let entityHeaders = '';
-        let entityListStr = '';
+        let tableCreateList = '';
+        let tableUpgradeList = '';
         tbNames.forEach((e) => {
             entityHeaders += `#include "${e.toLowerCase()}.h"\n`;
-            entityListStr += `${e}, `;
+            tableCreateList += `        globalConfig->getClient()->createTable<(int)ConfigType::${this.getSqlTypeName()}, ${e}>();\n`;
+            tableUpgradeList += `        globalConfig->getClient()->tableUpgrade<(int)ConfigType::${this.getSqlTypeName()}, ${e}>(oldVer, newVer);\n`;
         });
 
         let cpp = templateDelegateCpp
@@ -599,7 +595,8 @@ export class DatabaseGenerator {
             .replaceMask('$SqlType$', this.getSqlTypeName())
             .replaceMask('$SqlClientType$', this.getSqlClientTypeName())
             .replaceMask('$EntityHeaders$', entityHeaders)
-            .replaceMask('$EntityList$', entityListStr.substring(0, entityListStr.length - 2))
+            .replaceMask('$TableCreate$', tableCreateList.slice(0, -1))
+            .replaceMask('$TableUpgrade$', tableUpgradeList.slice(0, -1))
             ;
         changed = FileUtil.writeContentWithCheckHash(cpp, `${this.outputPath}\\${this.getSqlTypeName().toLowerCase()}entityinclude.cpp`) || changed;
         return changed;
@@ -616,7 +613,7 @@ export class DatabaseGenerator {
 HEADERS += ${tbNames.map((n) => `./${n.toLowerCase()}.h \\\n    `).merge()}./${this.getSqlTypeName().toLowerCase()}entityinclude.h
 SOURCES += ./${this.getSqlTypeName().toLowerCase()}entityinclude.cpp
 `;
-let changed = FileUtil.writeContentWithCheckHash(priContent, `${this.outputPath}\\entity.pri`);
+        let changed = FileUtil.writeContentWithCheckHash(priContent, `${this.outputPath}\\entity.pri`);
 
         //output cmake configure file
         let cmakeCOntent =
@@ -633,5 +630,17 @@ ${tbNames.map((n) => `    $\{CMAKE_CURRENT_LIST_DIR\}/${n.toLowerCase()}.h\n`).m
 
         changed = FileUtil.writeContentWithCheckHash(cmakeCOntent, `${this.outputPath}\\entity.cmake`) || changed;
         return changed;
+    }
+
+    protected generateGitIgnoreFile(tbNames: string[]): boolean {
+        let entityHeaders = '';
+        tbNames.forEach((e) => {
+            entityHeaders += `${e.toLowerCase()}.h\n`;
+        });
+        entityHeaders += `${this.getSqlTypeName().toLowerCase()}entityinclude.h\n`;
+        entityHeaders += `${this.getSqlTypeName().toLowerCase()}entityinclude.cpp`;
+
+        let content = templateGitIgnore.replaceMask('$GenerateFileList$', entityHeaders);
+        return FileUtil.writeContentWithCheckHash(content, `${this.outputPath}\\.gitignore`);
     }
 }

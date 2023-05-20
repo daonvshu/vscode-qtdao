@@ -72,6 +72,7 @@ export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterf
 
         changed = this.generateEntityDelegate(tbNames) || changed;
         changed = this.generateConfigureFile(tbNames) || changed;
+        changed = this.generateGitIgnoreFile(tbNames) || changed;
         return changed;
     }
 

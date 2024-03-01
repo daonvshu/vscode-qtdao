@@ -49,6 +49,8 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
                 .replaceMask('$UniqueFieldIndex$', this.createIndexFields('unique index'))
                 //set check name autoincrement
                 .replaceMask('$CheckNameIncrement$', this.createCheckNameIncrement())
+                //set foreignkey
+                .replaceMask('$ForeignKeys$', this.createForeignKeys(this.entity.prefix))
                 //set bind id
                 .replaceMask('$BindAutoIncrementId$', this.createBindAutoIncrementId())
                 //set bind value
@@ -64,7 +66,7 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
                 //operator equal
                 .replaceMask('$OperatorEqual$', this.createOperatorEqual())
                 //setter and getter
-                .replaceMask('$MemberGetterSetter$', this.createSetterGetter())
+                //.replaceMask('$MemberGetterSetter$', this.createSetterGetter())
                 //set meta type
                 .replaceMask('$DECLARE_META_TYPE$', this.createMetaType())
             ;

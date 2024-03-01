@@ -123,8 +123,8 @@ export class DatabaseGenerator {
 
         let fieldInit = this.createDefaultFieldInit();
         let initStr = fieldInit.isNotEmpty() ?
-            `\n\n   $ClassName$() {\n${fieldInit}   }` :
-            `\n\n   $ClassName$() {\n   }`;
+            `\n\n    $ClassName$() {\n${fieldInit}    }` :
+            `\n\n    $ClassName$() {\n    }`;
         constructList.push(initStr);
         constructSet.push(initStr);
 
@@ -372,6 +372,48 @@ export class DatabaseGenerator {
             return `Q_UNUSED(name);\n${this.tab3}return false`;
         }
         return 'return ' + str;
+    }
+
+    private foreignKeyActionToEnum(actionName: string): string {
+        const keyMap = new Map<string, string>([
+            ["no_action", "ForeignKey::FK_NO_ACTION"],
+            ["restrict", "ForeignKey::FK_RESTRICT"],
+            ["set_null", "ForeignKey::FK_SET_NULL"],
+            ["set_default", "ForeignKey::FK_SET_DEFAULT"],
+            ["cascade", "ForeignKey::FK_CASCADE"],
+        ]);
+        if (keyMap.has(actionName)) {
+            return keyMap.get(actionName) as string;
+        } 
+        return "ForeignKey::FK_NotSet";
+    }
+
+    protected createForeignKeys(tbPrefix: string): string {
+        let str = '';
+        for (let field of this.loadTb.fields) {
+            if (field.refer.referTable.isEmpty()) {
+                continue;
+            }
+            str += `\n${this.tab4}ForeignKey("${this.wrapWithCheckKeyworks(tbPrefix + field.refer.referTable.toLowerCase())}", `;
+            str += `${this.foreignKeyActionToEnum(field.refer.onUpdateAction)}, ${this.foreignKeyActionToEnum(field.refer.onDeleteAction)}, ${field.refer.deferrable})`;
+            str += `.field(`;
+            for (let i of field.refer.referFields) {
+                str += `"${i}", `;
+            }
+            str = str.slice(0, -2);
+            str += "),";
+        }
+        for (let fk of this.loadTb.refer) {
+            str += `\n${this.tab4}ForeignKey("${this.wrapWithCheckKeyworks(tbPrefix + fk.referTable.toLowerCase())}", `;
+            str += `${this.foreignKeyActionToEnum(fk.onUpdateAction)}, ${this.foreignKeyActionToEnum(fk.onDeleteAction)}, ${fk.deferrable})`;
+            str += `.field(`;
+            for (let i of fk.referFields) {
+                str += `"${i}", `;
+            }
+            str = str.slice(0, -2);
+            str += "),";
+        }
+        return str;
     }
 
     protected createValuesGetWithoutAutoIncrement(): string {

@@ -30,6 +30,8 @@ export class Field {
 
     typeReader?: TypeReadInterface;
 
+    refer: ForeignKey = new ForeignKey();
+
     analyzeCustomType() {
         if (this.type === "custom") {
             this.useCustomType = true;
@@ -72,6 +74,14 @@ export class Index {
     indexOptions: string = '';
 }
 
+export class ForeignKey {
+    referTable: string = '';
+    onUpdateAction: string = '';
+    onDeleteAction: string = '';
+    referFields: string[] = [];
+    deferrable: boolean = false;
+}
+
 export class Table {
     name: string = '';
     metaType: boolean = false;
@@ -82,6 +92,8 @@ export class Table {
     customConstructor: string[][] = [];
 
     engine: string = ''; //mysql engine
+
+    refer: ForeignKey[] = [];
 
     set typeInterface(reader: TypeReadInterface) {
         this.fields.forEach((e) => e.typeReader = reader);

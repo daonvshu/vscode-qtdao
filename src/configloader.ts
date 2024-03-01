@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fs = require('fs');
 
 import { parseString } from 'xml2js';
-import { Entity, Field, Index, Table } from './generators/entity';
+import { Entity, Field, ForeignKey, Index, Table } from './generators/entity';
 
 export function load(filePath: string): Promise<Entity | null> {
     var fileContent = fs.readFileSync(filePath).toString();
@@ -97,6 +97,12 @@ function resolveContent(object: any): Entity | null {
                 field.jsonTimeFormat = readAttributeDefaultEmpty(item, 'jsontimeformat');
                 field.autoIncrement = readAttributeBool(item, 'autoincrement');
                 field.transient = readAttributeBool(item, 'transient');
+                //foreigkey
+                field.refer.referTable = readAttributeDefaultEmpty(item, 'reftb');
+                field.refer.referFields.push(field.name, readAttributeDefaultEmpty(item, 'refitem'));
+                field.refer.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
+                field.refer.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});
+                field.refer.deferrable = readAttributeBool(item, 'deferrable');
                 //extra
                 field.bitSize = +readAttribute(item, {key: 'bitsize', defaultValue: '0'});
                 field.decimalPoint = +readAttribute(item, {key: 'decimal-d', defaultValue: '0'});
@@ -146,6 +152,26 @@ function resolveContent(object: any): Entity | null {
                         }
                     }
                     table.indexes.push(tbIndex);
+                }
+            }
+
+            let foreigkey = tb['foreignkey'];
+            if (foreigkey) {
+                for (let j = 0; j < foreigkey.length; j++) {
+                    let item = foreigkey[j];
+                    let foreignkeyData = new ForeignKey();
+                    foreignkeyData.referTable = readAttributeDefaultEmpty(item, 'reftb');
+                    foreignkeyData.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
+                    foreignkeyData.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});
+                    foreignkeyData.deferrable = readAttributeBool(item, 'deferrable');
+                    let fields = item['field'];
+                    for (let k = 0; k < fields.length; k++) {
+                        let field = fields[k];
+                        let refFrom = readAttribute(field, {key: 'name'});
+                        let refTo = readAttribute(field, {key: 'refitem'});
+                        foreignkeyData.referFields.push(refFrom, refTo);
+                    }
+                    table.refer.push(foreignkeyData);
                 }
             }
 

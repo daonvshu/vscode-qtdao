@@ -10,10 +10,11 @@ export const templateMysql = `/*************************************************
 #include <qjsonobject.h>
 $CustomTypeHeaders$
 #include "condition/entityfield.h"
+#include "condition/foreignkey.h"
 
 class $ClassName$ {
     $PropertyDeclare$
-private:
+public:
 $Members$
     QVariantMap __extra;
 
@@ -76,6 +77,11 @@ public:
         static bool isAutoIncrement(const QString& name) {
             $CheckNameIncrement$;
         }
+        
+        static QList<ForeignKey> getForeignKeys() {
+            return {$ForeignKeys$
+            };
+        }
     };
 
     struct Tool {
@@ -114,11 +120,18 @@ public:
         return $OperatorEqual$;
     }
 
-public:$MemberGetterSetter$
+    bool operator!=(const $ClassName$& other) const {
+        return !(*this == other);
+    }
+
+public:
     //set temp data
-    inline void __putExtra(const QString& key, const QVariant& extra) {this->__extra.insert(key, extra);}
+    void __putExtra(const QString& key, const QVariant& extra) {this->__extra.insert(key, extra);}
     //get function select result, like get "as" field result
-    inline QVariant __getExtra(const QString& key) const {return __extra.value(key);}
+    template <typename T>
+    T __getExtra(const QString& key) const {
+        return __extra[key].value<T>();
+    }
 };
 typedef QList<$ClassName$> $ClassName$List;
 $DECLARE_META_TYPE$`;

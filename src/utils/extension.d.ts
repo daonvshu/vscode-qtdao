@@ -1,6 +1,7 @@
 declare global {
     interface Array<T extends string> {
         merge(): string;
+        escapeMerge(split: string): string;
     }
 
     interface Array<T> {

@@ -1,4 +1,4 @@
-import { Entity, Field, Index, Table } from "./entity";
+import { Entity, Field, ForeignKey, Index, Table } from "./entity";
 
 import "../utils/array-extension.ts";
 import "../utils/string-extension.ts";
@@ -7,20 +7,287 @@ import { FileUtil } from "../utils/fileutil";
 import { templateDelegateCpp } from "../templates/delegate_cpp";
 import { templateGitIgnore } from "../templates/gitignore";
 
+interface TemplateFieldMember {
+    comment: string,
+    declare: string,
+}
+
+interface TemplateData {
+    className: string;
+    customTypeHeaders: string[];
+    fields: Field[];
+    indexes: Index[];
+
+    declareMetaType: boolean;
+    members: TemplateFieldMember[];
+    fieldWithoutTransient: Field[];
+    fieldWithoutDefault: Field[];
+    customConstructFields: Field[][];
+    databaseMemberDeclare: string[];
+    autoincFields: Field[];
+    foreignKeys: ForeignKey[];
+
+    fromJsonDeclares: string[];
+    toJsonDeclares: string[];
+    
+    tableName: string;
+    nameInDatabase: (name: string) => string;
+    foreignKeyActionToEnum: (actionName: string) => string;
+    databaseTbNameFormat: (name: string) => string;
+    serializableName: (field: Field) => string;
+    checkSerialzableValue: (field: Field) => string;
+}
+
 export class DatabaseGenerator {
 
     protected outputPath: string;
 
     protected entity: Entity;
 
+    protected templateDir: string;
+
     protected loadTb!: Table;
 
     private currentFieldSize = 0;
     private currentPrimaryKeySize = 0;
 
-    constructor(outputPath: string, entity: Entity) {
+    constructor(outputPath: string, entity: Entity, templateDir: string) {
         this.outputPath = outputPath;
         this.entity = entity;
+        this.templateDir = templateDir;
+    }
+
+    protected getTemplateData(prefix: string): TemplateData {
+        return {
+            className: this.loadTb.name,
+            customTypeHeaders: this.customTypeHeaders,
+            fields: this.loadTb.fields,
+            indexes: this.loadTb.indexes,
+
+            declareMetaType: this.loadTb.metaType,
+            members: this.getMemberDeclare(),
+            fieldWithoutTransient: this.fieldWithoutTransient,
+            fieldWithoutDefault: this.fieldsWithoutDefault,
+            customConstructFields: this.customConstructFields,
+            databaseMemberDeclare: this.databaseMemberDeclare,
+            autoincFields: this.autoincFields,
+            foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer), ...this.loadTb.refer],
+
+            fromJsonDeclares: this.fromJsonDeclares,
+            toJsonDeclares: this.toJsonDeclares,
+
+            tableName: this.createTableName(prefix),
+            nameInDatabase: (name: string) => this.getFieldNameInDatabase(name),
+            foreignKeyActionToEnum: this.foreignKeyActionToEnum,
+            databaseTbNameFormat: (name: string) => this.wrapWithCheckKeyworks(prefix + name.toLowerCase()),
+            serializableName: this.serializableEntityFieldName,
+            checkSerialzableValue: this.checkSerialzableValue,
+        };
+    };
+
+    private get customTypeHeaders(): string[] {
+        return Array.from(
+            new Set(
+                this.loadTb.fields.flatMap(field => field.typeHeaders)
+                ));
+    }
+
+    private getMemberDeclare(): TemplateFieldMember[] {
+        return this.loadTb.fields.map(field => {
+            let defaultStr = field.defaultValue.isEmpty() ? "" : ` = ${field.defaultValue}`;
+            return {
+                comment: (field.transient ? "/// transient " : "// ") + field.note,
+                declare: `${field.cppType} ${field.name}${defaultStr};`
+            };
+        });
+    }
+
+    private get fieldWithoutTransient(): Field[] {
+        return this.loadTb.fields.filter(field => !field.transient );
+    }
+
+    private get fieldsWithoutDefault(): Field[] {
+        return this.fieldWithoutTransient.filter(field => field.defaultValue.isEmpty() );
+    }
+
+    private get customConstructFields(): Field[][] {
+        return this.loadTb.customConstructor.map(fieldList => {
+            return this.fieldWithoutTransient.filter(field => fieldList.contains(field.name));
+        });
+    }
+
+    private get autoincFields(): Field[] {
+        return this.fieldWithoutTransient.filter(field => field.autoIncrement);
+    }
+
+    private get databaseMemberDeclare(): string[] {
+        let declares: string[] = [];
+        for (let field of this.fieldWithoutTransient) {
+            let str = `${this.getFieldNameInDatabase(field.name)} ${field.sqlType}`;
+            if (field.bitSize !== 0) {
+                if (field.type === 'decimal' && field.decimalPoint !== 0) {
+                    str += `(${field.bitSize},${field.decimalPoint})`;
+                } else {
+                    str += `(${field.bitSize})`;
+                }
+            } else {
+                if (field.type === 'decimal' && field.decimalPoint !== 0) {
+                    str += `(0, ${field.decimalPoint})`;
+                }
+            }
+            if (field.constraint.isNotEmpty()) {
+                if (field.constraint === 'primary key' && this.currentPrimaryKeySize === 1) {
+                    str += ` ${field.constraint}`;
+                    if (field.autoIncrement) {
+                        str += ` ${this.getAutoIncrementStatement()}`;
+                    }
+                } else if (field.constraint === 'not null') {
+                    str += ` not null`;
+                } else if (field.constraint === 'unique') {
+                    str += ` not null unique`;
+                }
+            }
+            if (field.defaultValue.isNotEmpty() && !field.autoIncrement) {
+                let defaultStr = field.sqlDefault!;
+                if (defaultStr.isNotEmpty()) {
+                    str += ' ';
+                    if (field.constraint !== 'primary key') {
+                        str += 'null ';
+                    }
+                    str += `default ${defaultStr}`;
+                }
+            }
+            let comment = this.getComment(field.note);
+            if (comment.isNotEmpty()) {
+                str += comment;
+            }
+            declares.push(str);
+        }
+        return declares;
+    }
+
+    private checkSerialzableValue(field: Field): string {
+        if (field.useCustomType) {
+            return `dao::deserializeBinaryToCustomType<${field.cppType}>(value.toByteArray())`;
+        }
+        return `value.value<${field.cppType}>()`;
+    }
+
+    private get fromJsonDeclares(): string[] {
+        let declares: string[] = [];
+        for (let field of this.fieldWithoutTransient) {
+            let str = `entity.${field.name} = `;
+            let cppType = field.cppType;
+            if (field.useCustomType) {
+                str += `dao::deserializeBinaryToCustomType<${cppType}>(QByteArray::fromBase64(object.value("`;
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += 'QByteArray::fromBase64(object.value("';
+                        break;
+                    case 'QDate':
+                        str += 'QDate::fromString(object.value("';
+                        break;
+                    case 'QDateTime':
+                        str += 'QDateTime::fromString(object.value("';
+                        break;
+                    case 'QTime':
+                        str += 'QTime::fromString(object.value("';
+                        break;
+                    default:
+                        str += 'object.value("';
+                }
+            }
+
+            if (field.jsonKey.isEmpty()) {
+                str += field.name.snakeCase();
+            } else {
+                str += field.jsonKey;
+            }
+            
+            if (field.useCustomType) {
+                str += '").toString().toLatin1()));';
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += '").toString().toLatin1());';
+                        break;
+                    case 'QDate':
+                    case 'QDateTime':
+                    case 'QTime':
+                        str += '").toString(), "';
+                        if (field.jsonTimeFormat.isEmpty()) {
+                            if (cppType === 'QDate') {
+                                str += 'yyyy-MM-dd';
+                            } else if (cppType === 'QTime') {
+                                str += 'HH:mm:ss';
+                            } else {
+                                str += 'yyyy-MM-dd HH:mm:ss';
+                            }
+                        } else {
+                            str += field.jsonTimeFormat;
+                        }
+                        str += '");';
+                        break;
+                    case 'QVariant':
+                        str += '");';
+                        break;
+                    default:
+                        str += `").toVariant().value<${field.cppType}>();`;
+                }
+            }
+            declares.push(str);
+        }
+        return declares;
+    }
+
+    private get toJsonDeclares(): string[] {
+        let declares: string[] = [];
+        for (let field of this.fieldWithoutTransient) {
+            let str = `object.insert("`;
+            if (field.jsonKey.isEmpty()) {
+                str += field.name.snakeCase();
+            } else {
+                str += field.jsonKey;
+            }
+            str += '", ';
+            let cppType = field.cppType!;
+            if (field.useCustomType) {
+                str += `QString::fromLatin1(dao::serializeCustomTypeToBinary(entity.${field.name}).toBase64())`;
+            } else {
+                switch(cppType) {
+                    case 'QByteArray':
+                        str += `QString::fromLatin1(entity.${field.name}.toBase64())`;
+                        break;
+                    case 'QVariant':
+                        str += `QJsonValue::fromVariant(entity.${field.name})`;
+                        break;
+                    default:
+                        str += `entity.${field.name}`;
+                        if (['QDate', 'QTime', 'QDateTime'].indexOf(cppType) !== -1) {
+                            str += '.toString("';
+                            if (field.jsonTimeFormat.isEmpty()) {
+                                if (cppType === 'QDate') {
+                                    str += 'yyyy-MM-dd';
+                                } else if (cppType === 'QTime') {
+                                    str += 'HH:mm:ss';
+                                } else {
+                                    str += 'yyyy-MM-dd HH:mm:ss';
+                                }
+                            } else {
+                                str += field.jsonTimeFormat;
+                            }
+                            str += '")';
+                        } else if (cppType === 'QChar') {
+                            str += '.toLatin1()';
+                        }
+                        break;
+                }
+            }
+            str += ');';
+            declares.push(str);
+        }
+        return declares;
     }
 
     //interfaces

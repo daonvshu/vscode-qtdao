@@ -5,6 +5,9 @@ import { templateSqlite } from "../templates/sqlite";
 import { keywordsOrReservedWords } from "../utils/keywords";
 import { TypeReadInterface } from "./entity";
 
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs');
 export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterface {
 
     public generate(): boolean {
@@ -68,6 +71,18 @@ export class SqliteGenerator extends DatabaseGenerator implements TypeReadInterf
                 //set meta type
                 .replaceMask('$DECLARE_META_TYPE$', this.createMetaType())
             ;
+
+            const templatePath = path.join(this.templateDir, 'sqlite.ejs');
+
+            // 使用renderFile方法来渲染模板
+            ejs.renderFile(templatePath, this.getTemplateData(this.entity.prefix), {}, (err: any, str: string) => {
+                // str => 渲染后的HTML字符串
+                if (err) {
+                    console.error('Error rendering EJS template:', err);
+                } else {
+                    FileUtil.writeContentWithCheckHash(str, this.outputPath + '\\' + FileUtil.outputTbFileName(tb) + ".els");
+                }
+            });
 
             changed = FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb)) || changed;
         });

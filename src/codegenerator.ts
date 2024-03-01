@@ -5,7 +5,7 @@ import { SqliteGenerator } from './generators/sqlitegenerator';
 import { MysqlGeneator } from './generators/mysqlgenerator';
 import { SqlServerGenerator } from './generators/sqlservergenerator';
 
-export function generateEntityCode(filePath: string) {
+export function generateEntityCode(filePath: string, templateDir: string) {
     vscode.window.withProgress({
         cancellable: false,
         location: vscode.ProgressLocation.Notification,
@@ -26,13 +26,13 @@ export function generateEntityCode(filePath: string) {
                 let changed = false;
                 switch(entity.dbType) {
                     case 'sqlite':
-                        changed = new SqliteGenerator(fileDir, entity).generate();
+                        changed = new SqliteGenerator(fileDir, entity, templateDir).generate();
                         break;
                     case 'mysql':
-                        changed = new MysqlGeneator(fileDir, entity).generate();
+                        changed = new MysqlGeneator(fileDir, entity, templateDir).generate();
                         break;
                     case 'sqlserver':
-                        changed = new SqlServerGenerator(fileDir, entity).generate();
+                        changed = new SqlServerGenerator(fileDir, entity, templateDir).generate();
                         break;
                 }
                 if (!changed) {

@@ -9,7 +9,7 @@
   <tb name="SqliteTest2" declaremetatype="true">
     <item name="id" type="long" default="-1" constraints="primary key" autoincrement="true" note="自增长主键"/>
     <item name="name" type="text" constraints="not null"/>
-    <item name="number" type="int" default="0"/>
+    <item name="number" type="int" default="0" autoincrement="true" />
     <item name="number2" type="int"/>
     <item name="varianttype" type="variant" note="自定义类型"/>
     <item name="nametmp" type="text" transient="true" note="临时类型" />
@@ -35,6 +35,15 @@
       <field name="tbi1" refitem="id" />
       <field name="name" refitem="name" />
     </foreignkey>
+    <constructor>
+      <field>tbi1</field>
+      <field>tbi2</field>
+      <field>name</field>
+    </constructor>
+    <constructor>
+      <field>tbi1</field>
+      <field>size</field>
+    </constructor>
   </tb>
   <tb name="SqliteDefaultTestInt" declaremetatype="true">
     <!--integer type-->

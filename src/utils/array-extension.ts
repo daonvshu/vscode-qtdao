@@ -4,6 +4,17 @@ Array.prototype.merge = function (): string {
     return str;
 };
 
+Array.prototype.escapeMerge = function (split: string): string {
+    let str = '';
+    this.forEach((e, i) => {
+        str += '"' + e + '"';
+        if (i !== this.length - 1) {
+            str += split;
+        }
+    });
+    return str;
+};
+
 Array.prototype.isEmpty = function (): boolean {
     if (this === undefined || this === null) {
         return true;

@@ -43,40 +43,16 @@ public:
 
 public:
     <%- className %> () {}
-
-<%# "-------------- all members of construct declare --------------" -%>
-    <%- className %> (
-<% fieldWithoutTransient.forEach((field, index) => { -%>
-        const <%- field.cppType %>& <%- field.name %><% if(index !== fieldWithoutTransient.length - 1) { %>,<% } %>
-<% }) -%>
-    )
-<% fieldWithoutTransient.forEach((field, index) => { -%>
-    <% if(index === 0) { %>:<% } else { %>,<% } %> <%- field.name %>(<%- field.name %>)
-<% }) -%>
-    {}
-<%# "-------------- members without default values of construct declare --------------" -%>
-<% if (fieldWithoutDefault.length !== 0) { -%>
+<%# "-------------- construct declare --------------" -%>
+<% if (constructFields.length !== 0) { -%>
+<% constructFields.forEach(fields => { -%>
 
     <%- className %> (
-<% fieldWithoutDefault.forEach((field, index) => { -%>
-        const <%- field.cppType %>& <%- field.name %><% if(index !== fieldWithoutDefault.length - 1) { %>,<% } %>
+<% fields.forEach((field, index) => { -%>
+        const <%- field.cppType %>& <%- field.name %><% if(index !== fields.length - 1) { %>,<% } %>
 <% }) -%>
     )
-<% fieldWithoutDefault.forEach((field, index) => { -%>
-    <% if(index === 0) { %>:<% } else { %>,<% } %> <%- field.name %>(<%- field.name %>)
-<% }) -%>
-    {}
-<% } -%>
-<%# "-------------- custom custruct declare --------------" -%>
-<% if (customConstructFields.length !== 0) { -%>
-<% customConstructFields.forEach(customFields => { -%>
-
-    <%- className %> (
-<% customFields.forEach((field, index) => { -%>
-        const <%- field.cppType %>& <%- field.name %><% if(index !== customFields.length - 1) { %>,<% } %>
-<% }) -%>
-    )
-<% customFields.forEach((field, index) => { -%>
+<% fields.forEach((field, index) => { -%>
     <% if(index === 0) { %>:<% } else { %>,<% } %> <%- field.name %>(<%- field.name %>)
 <% }) -%>
     {}

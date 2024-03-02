@@ -22,8 +22,7 @@ interface EntityTemplateData {
     declareMetaType: boolean;
     members: EntityTemplateFieldMember[];
     fieldWithoutTransient: Field[];
-    fieldWithoutDefault: Field[];
-    customConstructFields: Field[][];
+    constructFields: Field[][];
     databaseMemberDeclare: string[];
     autoincFields: Field[];
     foreignKeys: ForeignKey[];
@@ -73,8 +72,7 @@ export class DatabaseGenerator {
             declareMetaType: this.loadTb.metaType,
             members: this.getMemberDeclare(),
             fieldWithoutTransient: this.fieldWithoutTransient,
-            fieldWithoutDefault: this.fieldsWithoutDefault,
-            customConstructFields: this.customConstructFields,
+            constructFields: this.constructFields,
             databaseMemberDeclare: this.databaseMemberDeclare,
             autoincFields: this.autoincFields,
             foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer), ...this.loadTb.refer],
@@ -123,10 +121,24 @@ export class DatabaseGenerator {
         return this.fieldWithoutTransient.filter(field => field.defaultValue.isEmpty() );
     }
 
+    private get fieldsWithoutAutoIncrement(): Field[] {
+        return this.fieldWithoutTransient.filter(field => !field.autoIncrement );
+    }
+
     private get customConstructFields(): Field[][] {
         return this.loadTb.customConstructor.map(fieldList => {
             return this.fieldWithoutTransient.filter(field => fieldList.contains(field.name));
         });
+    }
+
+    private get constructFields(): Field[][] {
+        let fieldsForConstruct = [this.fieldWithoutTransient, this.fieldsWithoutAutoIncrement, this.fieldsWithoutDefault, ...this.customConstructFields];
+        return fieldsForConstruct.reduce((uniqueFields, curFields) => {
+            if (!uniqueFields.some(fields => fields.length === curFields.length && fields.every((field, index) => field.name === curFields[index].name))) {
+                uniqueFields.push(curFields);
+            }
+            return uniqueFields;
+        }, [] as Field[][]);
     }
 
     private get autoincFields(): Field[] {

@@ -53,8 +53,6 @@ export class DatabaseGenerator {
 
     protected loadTb!: Table;
 
-    private currentPrimaryKeySize = 0;
-
     constructor(outputPath: string, entity: Entity, templateDir: string) {
         this.outputPath = outputPath;
         this.entity = entity;
@@ -138,7 +136,7 @@ export class DatabaseGenerator {
                 uniqueFields.push(curFields);
             }
             return uniqueFields;
-        }, [] as Field[][]);
+        }, [] as Field[][]).filter(fields => fields.isNotEmpty());
     }
 
     private get autoincFields(): Field[] {
@@ -146,6 +144,7 @@ export class DatabaseGenerator {
     }
 
     private get databaseMemberDeclare(): string[] {
+        let currentPrimaryKeySize = this.fieldWithoutTransient.filter(field => field.constraint === 'primary key').length;
         let declares: string[] = [];
         for (let field of this.fieldWithoutTransient) {
             let str = `${this.getFieldNameInDatabase(field.name)} ${field.sqlType}`;
@@ -161,7 +160,7 @@ export class DatabaseGenerator {
                 }
             }
             if (field.constraint.isNotEmpty()) {
-                if (field.constraint === 'primary key' && this.currentPrimaryKeySize === 1) {
+                if (field.constraint === 'primary key' && currentPrimaryKeySize === 1) {
                     str += ` ${field.constraint}`;
                     if (field.autoIncrement) {
                         str += ` ${this.getAutoIncrementStatement()}`;

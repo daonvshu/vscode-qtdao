@@ -127,6 +127,26 @@ public:
             };
         }
 
+        static QList<QStringList> getClusteredIndexFields() {
+            return {
+                <%_ indexes.forEach(index => { -%>
+                    <%_ if (index.indexType === 'clustered') { -%>
+                { <%- index.fields.map(field => nameInDatabase(field)).escapeMerge(', ') %> },
+                    <%_ } -%>
+                <%_ }) -%>
+            };
+        }
+
+        static QList<QStringList> getUniqueClusteredIndexFields() {
+            return {
+                <%_ indexes.forEach(index => { -%>
+                    <%_ if (index.indexType === 'unique clustered') { -%>
+                { <%- index.fields.map(field => nameInDatabase(field)).escapeMerge(', ') %> },
+                    <%_ } -%>
+                <%_ }) -%>
+            };
+        }
+
         static QList<QStringList> getNonClusteredIndexFields() {
             return {
                 <%_ indexes.forEach(index => { -%>

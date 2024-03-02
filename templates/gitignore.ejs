@@ -1,0 +1,7 @@
+.gitignore
+entity.cmake
+entity.pri
+
+<% entityTbNames.forEach(name => { -%>
+<%= name.toLowerCase() %>.h
+<% }) %>

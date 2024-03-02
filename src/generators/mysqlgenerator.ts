@@ -1,82 +1,13 @@
-import { templateMysql } from "../templates/mysql";
 import { DatabaseGenerator } from "./databasegenerator";
-import { FileUtil } from "../utils/fileutil";
-import "../utils/string-extension.ts";
 import { keywordsOrReservedWords } from "../utils/keywords";
 import { TypeReadInterface } from "./entity";
 
 export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterface {
 
     public generate(): boolean {
-        
-        var tbNames = new Array<string>();
-        var changed = false;
-        this.entity.tables.forEach((tb) => {
-            tbNames.push(tb.name);
-            
-            tb.typeInterface = this;
-            this.loadTb = tb;
-
-            var header = templateMysql
-                //set classname
-                .replaceMask('$ClassName$', tb.name)
-                //custom type headers
-                .replaceMask('$CustomTypeHeaders$', this.createCustomTypeHeaders())
-                //set property declare
-                .replaceMask('$PropertyDeclare$', this.createPropertyDeclare())
-                //set field list
-                .replaceMask('$Members$', this.createFieldList())
-                //set constructor
-                .replaceMask('$Construct$', this.createConstruct())
-                //set field declare
-                .replaceMask('$FieldDeclare$', this.createFieldDeclare(this.entity.prefix))
-                .replaceMask('$FieldDeclareReset$', this.createFieldDeclareReset())
-                //set field size
-                .replaceMask('$FieldSize$', this.createFieldSize())
-                //set tablename
-                .replaceMask('$TbName$', this.createTableName(this.entity.prefix))
-                //set engine
-                .replaceMask('$TbEngine$', this.createTableEngine(tb.engine))
-                //set fields
-                .replaceMask('$Fields$', this.createFields())
-                .replaceMask('$FieldsWithoutAuto$', this.createFieldsWithoutAutoIncrement())
-                //set database type
-                .replaceMask('$FieldType$', this.createDatabaseType())
-                //set primary keys
-                .replaceMask('$PrimaryKey$', this.createPrimaryKeys())
-                //set index
-                .replaceMask('$FieldIndex$', this.createIndexFields())
-                .replaceMask('$UniqueFieldIndex$', this.createIndexFields('unique index'))
-                //set check name autoincrement
-                .replaceMask('$CheckNameIncrement$', this.createCheckNameIncrement())
-                //set foreignkey
-                .replaceMask('$ForeignKeys$', this.createForeignKeys(this.entity.prefix))
-                //set bind id
-                .replaceMask('$BindAutoIncrementId$', this.createBindAutoIncrementId())
-                //set bind value
-                .replaceMask('$BindValues$', this.createBindValue())
-                //set json to entity
-                .replaceMask('$JsonToEntity$', this.createJsonToEntity())
-                //set entity to json
-                .replaceMask('$EntityToJson$', this.createEntityToJson())
-                //set values getter
-                .replaceMask('$ValuesWithAuto$', this.createValuesGetWithoutAutoIncrement())
-                //set value getter
-                .replaceMask('$GetValueByName$', this.createGetValueByName())
-                //operator equal
-                .replaceMask('$OperatorEqual$', this.createOperatorEqual())
-                //setter and getter
-                //.replaceMask('$MemberGetterSetter$', this.createSetterGetter())
-                //set meta type
-                .replaceMask('$DECLARE_META_TYPE$', this.createMetaType())
-            ;
-
-            changed = FileUtil.writeContentWithCheckHash(header, this.outputPath + '\\' + FileUtil.outputTbFileName(tb)) || changed;
-        });
-
-        changed = this.generateEntityDelegate(tbNames) || changed;
-        changed = this.generateConfigureFile(tbNames) || changed;
-        changed = this.generateGitIgnoreFile(tbNames) || changed;
+        let changed = this.generateEntities(this);
+        changed = this.generateDelegateFiles() || changed;
+        changed = this.generateConfigFiles() || changed;
         return changed;
     }
 
@@ -269,10 +200,6 @@ export class MysqlGeneator extends DatabaseGenerator implements TypeReadInterfac
 
     protected getSqlTypeName(): string {
         return 'Mysql';
-    }
-
-    protected getSqlClientTypeName(): string {
-        return 'ClientMysql';
     }
 
     protected wrapWithCheckKeyworks(name: string): string {

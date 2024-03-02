@@ -7,7 +7,7 @@ Array.prototype.merge = function (): string {
 Array.prototype.escapeMerge = function (split: string): string {
     let str = '';
     this.forEach((e, i) => {
-        str += '"' + e + '"';
+        str += 'QLatin1String("' + e + '")';
         if (i !== this.length - 1) {
             str += split;
         }

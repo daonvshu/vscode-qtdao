@@ -151,24 +151,33 @@ public:
             };
         }
 
-        static QList<QStringList> getIndexFields() {
+        static QList<QStringList> getNonClusteredIndexFields() {
             return {
                 <%_ indexes.forEach(index => { -%>
-                    <%_ if (index.indexType === 'index') { -%>
+                    <%_ if (index.indexType === 'nonclustered') { -%>
                 { <%- index.fields.map(field => nameInDatabase(field)).escapeMerge(', ') %> },
                     <%_ } -%>
                 <%_ }) -%>
             };
         }
 
-        static QList<QStringList> getUniqueIndexFields() {
+        static QList<QStringList> getUniqueNonClusteredIndexFields() {
             return {
                 <%_ indexes.forEach(index => { -%>
-                    <%_ if (index.indexType === 'unique index') { -%>
+                    <%_ if (index.indexType === 'unique nonclustered') { -%>
                 { <%- index.fields.map(field => nameInDatabase(field)).escapeMerge(', ') %> },
                     <%_ } -%>
                 <%_ }) -%>
             };
+        }
+
+        static QString getIndexOption(const QString& name) {
+            <%_ indexes.filter(index => index.indexOptions.isNotEmpty()).forEach(index => { -%>
+            if(name == QLatin1String("index<%- index.fields.map(field => '_' + field.split(' ')[0]).merge() %>")) {
+                return QLatin1String("<%- index.indexOptions %>");
+            }
+            <%_ }) -%>
+            return {};
         }
 
         static bool isAutoIncrement(const QString& name) {

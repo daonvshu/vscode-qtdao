@@ -5,8 +5,8 @@ import crypto = require('crypto');
 
 export class FileUtil {
 
-    static outputTbFileName(tb: Table): string {
-        return `${tb.name.toLowerCase()}.h`;
+    static outputTbFileName(tbName: string): string {
+        return `${tbName.toLowerCase()}.h`;
     }
 
     static getStrMd5(str: string): string {

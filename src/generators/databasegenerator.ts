@@ -334,7 +334,10 @@ export class DatabaseGenerator {
         this.entity.tables.forEach((tb) => {
             tb.typeInterface = typeReader;
             this.loadTb = tb;
-            changed = this.renderTemplate(FileUtil.outputTbFileName(tb.name), this.getSqlTypeName().toLowerCase() + ".ejs", this.getEntityTemplateData(this.entity.prefix)) || changed;
+            let data = this.getEntityTemplateData(this.entity.prefix);
+            let fileName = this.getSqlTypeName().toLowerCase();
+            changed = this.renderTemplate(`${tb.name.toLowerCase()}.h`, fileName + "_h.ejs", data) || changed;
+            changed = this.renderTemplate(`${tb.name.toLowerCase()}.cpp`, fileName + "_cpp.ejs", data) || changed;
         });
         return changed;
     }

@@ -9,5 +9,9 @@ HEADERS += \
 <% }) -%>
     ./<%= typeName.toLowerCase() %>entityinclude.h
 
-SOURCES += ./<%= typeName.toLowerCase() %>entityinclude.cpp
+SOURCES += \
+<% entityTbNames.forEach(name => { -%>
+    ./<%= name.toLowerCase() %>.cpp \
+<% }) -%>
+    ./<%= typeName.toLowerCase() %>entityinclude.cpp
 

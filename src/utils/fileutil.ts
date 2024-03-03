@@ -5,10 +5,6 @@ import crypto = require('crypto');
 
 export class FileUtil {
 
-    static outputTbFileName(tbName: string): string {
-        return `${tbName.toLowerCase()}.h`;
-    }
-
     static getStrMd5(str: string): string {
         const hash = crypto.createHash('md5');
         hash.update(str, 'utf8');

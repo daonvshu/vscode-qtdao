@@ -19,6 +19,13 @@
     <%_ } -%>
 <% }) -%>
 <% } -%>
+<%# "-------------- foreign key link headers --------------" -%>
+<% if (foreignKeyLinks.length !== 0) { -%>
+<%- '\n' -%>
+<% Array.from(new Set(foreignKeyLinks.flatMap(foreignKey => foreignKey.table.toLowerCase()))).forEach(name => { -%>
+#include "<%- name %>.h"
+<% }) -%>
+<% } -%>
 
 #include "condition/entityfield.h"
 #include "condition/foreignkey.h"
@@ -125,18 +132,24 @@ public:
     bool operator==(const <%- className %>& other) const;
 
     bool operator!=(const <%- className %>& other) const;
+<%# "-------------- if foreign key link tables is not empty, add 'get' functions by foreign key field --------------" -%>
+    <%_ if (foreignKeyLinks.length !== 0) { -%>
+        <%_ foreignKeyLinks.forEach(foreignkey => { %>
+    <%- foreignkey.table %>List get<%- foreignkey.table %>By<%- foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge() %>();
+        <%_ }) -%>
+    <%_ } -%>
 <%# "-------------- if have only one primary key, add insert/update/remove/select functions use by primary key field --------------" -%>
     <%_ if (autoincFields.length === 1) { -%>
     <%- '\n' -%>
     void insert();
 
-    void update();
+    void update() const;
 
     void select();
 
     static <%- className %> select(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
 
-    void remove();
+    void remove() const;
 
     static void remove(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
     <%_ } -%>

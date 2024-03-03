@@ -137,13 +137,13 @@ public:
     <%- '\n' -%>
     void insert();
 
-    void update();
+    void update() const;
 
     void select();
 
     static <%- className %> select(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
 
-    void remove();
+    void remove() const;
 
     static void remove(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
     <%_ } -%>

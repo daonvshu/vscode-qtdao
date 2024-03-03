@@ -181,7 +181,7 @@ void <%- className %>::insert() {
     dao::_insert<<%- className %>>().build().insert(*this);
 }
 
-void <%- className %>::update() {
+void <%- className %>::update() const {
     dao::_update<<%- className %>>().build().update(*this);
 }
 
@@ -195,7 +195,7 @@ void <%- className %>::select() {
     return dao::_select<<%- className %>>().filter(field.<%- autoincFields[0].name %> == <%- autoincFields[0].name %>).build().unique();
 }
 
-void <%- className %>::remove() {
+void <%- className %>::remove() const {
     dao::_delete<<%- className %>>().build().deleteBy(*this);
 }
 

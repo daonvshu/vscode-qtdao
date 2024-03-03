@@ -98,6 +98,7 @@ function resolveContent(object: any): Entity | null {
                 field.autoIncrement = readAttributeBool(item, 'autoincrement');
                 field.transient = readAttributeBool(item, 'transient');
                 //foreigkey
+                field.refer.table = table.name;
                 field.refer.referTable = readAttributeDefaultEmpty(item, 'reftb');
                 field.refer.referFields.push(field.name, readAttributeDefaultEmpty(item, 'refitem'));
                 field.refer.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
@@ -160,6 +161,7 @@ function resolveContent(object: any): Entity | null {
                 for (let j = 0; j < foreigkey.length; j++) {
                     let item = foreigkey[j];
                     let foreignkeyData = new ForeignKey();
+                    foreignkeyData.table = table.name;
                     foreignkeyData.referTable = readAttributeDefaultEmpty(item, 'reftb');
                     foreignkeyData.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
                     foreignkeyData.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});

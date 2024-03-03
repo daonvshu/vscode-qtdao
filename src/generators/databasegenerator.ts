@@ -26,6 +26,7 @@ interface EntityTemplateData {
     databaseMemberDeclare: string[];
     autoincFields: Field[];
     foreignKeys: ForeignKey[];
+    foreignKeyLinks: ForeignKey[];
 
     fromJsonDeclares: string[];
     toJsonDeclares: string[];
@@ -74,6 +75,7 @@ export class DatabaseGenerator {
             databaseMemberDeclare: this.databaseMemberDeclare,
             autoincFields: this.autoincFields,
             foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer), ...this.loadTb.refer],
+            foreignKeyLinks: this.foreignKeyLinks,
 
             fromJsonDeclares: this.fromJsonDeclares,
             toJsonDeclares: this.toJsonDeclares,
@@ -141,6 +143,13 @@ export class DatabaseGenerator {
 
     private get autoincFields(): Field[] {
         return this.fieldWithoutTransient.filter(field => field.autoIncrement);
+    }
+
+    private get foreignKeyLinks(): ForeignKey[] {
+        return this.entity.tables.reduce((foreignKeys, tb) => {
+            const keyFromFields = tb.fields.map(field => field.refer);
+            return foreignKeys.concat(tb.refer, keyFromFields);
+        }, [] as ForeignKey[]).filter(foreignKey => foreignKey.referTable === this.loadTb.name);
     }
 
     private get databaseMemberDeclare(): string[] {

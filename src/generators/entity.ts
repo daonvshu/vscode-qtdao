@@ -75,6 +75,7 @@ export class Index {
 }
 
 export class ForeignKey {
+    table: string = '';
     referTable: string = '';
     onUpdateAction: string = '';
     onDeleteAction: string = '';

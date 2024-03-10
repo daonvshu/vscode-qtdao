@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.3
+- Added support for foreign keys and functions to retrieve child table data lists.
+- Entity class 'get/set' functions have been marked DEPRECATED, use member variable access instead.
+- Introduced direct CRUD operations for entities with a single auto-incrementing field.
+
 ### 0.1.2
 - Removed the 'getFieldsWithoutTimestamp' function in the entity class when using SQLServer.
 - Updated the entity delegate. This update requires QtDao v2.1.0 or higher.

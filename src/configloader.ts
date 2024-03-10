@@ -47,6 +47,57 @@ function readAttributeBool(object: any, key: string): boolean {
     return v === '1' || v === 'true';
 }
 
+function checkUniqueForeignReferenceKey(entity: Entity, foreignkey: ForeignKey) {
+    if (foreignkey.referTable.isEmpty()) {
+        return;
+    }
+    let referTb = entity.tables.find(tb => tb.name === foreignkey.referTable) || null;
+    if (referTb === null) {
+        throw Error(`The table '${foreignkey.table}' cannot find foreign key reference table: '${foreignkey.referTable}'`);
+    }
+    let referFields = foreignkey.referFields.filter((_, index) => index % 2 === 1);
+    //check field unique or primary key
+    if (referFields.length === 1) {
+        let isUniqueField = referTb?.fields.some(field =>
+            field.name === referFields[0] &&
+            (field.constraint === "unique" || field.constraint === "primary key")
+        );
+        if (!isUniqueField) {
+            throw Error(`The table '${foreignkey.table}' foreign key referenced field that not defined unique or primary key in '${foreignkey.referTable}': ${referFields[0]}`);
+        }
+        return;
+    }
+
+    //check composite unique index
+    let isUniqueIndex = referTb?.indexes.some(index => 
+        indexIsUniqueIndex(index.indexType, entity.dbType) &&
+        arraysEqual([...referFields].sort(), [...index.fields].sort())
+    );
+
+    function indexIsUniqueIndex(indexType: string, dbType: string): Boolean {
+        if (dbType === "sqlserver") {
+            return indexType === "unique clustered" || indexType === "unique nonclustered";
+        }
+        return indexType === "unique index";
+    }
+    
+    function arraysEqual(a: any[], b: any[]): Boolean {
+        if (a.length !== b.length) {
+            return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    if (!isUniqueIndex) {
+        throw Error(`The table '${foreignkey.table}' composite foreign key referenced non-unique index in '${foreignkey.referTable}': ${referFields.join(' ')}`);
+    }
+}
+
 function resolveContent(object: any): Entity | null {
     //console.log(object);
     try {
@@ -104,6 +155,7 @@ function resolveContent(object: any): Entity | null {
                 field.refer.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
                 field.refer.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});
                 field.refer.deferrable = readAttributeBool(item, 'deferrable');
+                checkUniqueForeignReferenceKey(entity, field.refer);
                 //extra
                 field.bitSize = +readAttribute(item, {key: 'bitsize', defaultValue: '0'});
                 field.decimalPoint = +readAttribute(item, {key: 'decimal-d', defaultValue: '0'});
@@ -173,6 +225,7 @@ function resolveContent(object: any): Entity | null {
                         let refTo = readAttribute(field, {key: 'refitem'});
                         foreignkeyData.referFields.push(refFrom, refTo);
                     }
+                    checkUniqueForeignReferenceKey(entity, foreignkeyData);
                     table.refer.push(foreignkeyData);
                 }
             }

@@ -119,7 +119,7 @@ QList<ForeignKey> <%- className %>::Info::getForeignKeys() {
     return {
         <%_ foreignKeys.forEach(key => { -%>
             <%_ if (!key.referTable.isEmpty()) { -%>
-        ForeignKey(QLatin1String("<%- databaseTbNameFormat(key.referTable) %>"), <%- foreignKeyActionToEnum(key.onUpdateAction) %>, <%- foreignKeyActionToEnum(key.onDeleteAction) %>, <%- key.deferrable %>).field(<%- key.referFields.escapeMerge(", ") %>),
+        ForeignKey(QLatin1String("<%- databaseTbNameFormat(key.referTable) %>"), <%- foreignKeyActionToEnum(key.onUpdateAction) %>, <%- foreignKeyActionToEnum(key.onDeleteAction) %>, <%- key.deferrable %>).field(<%- key.referFields.map(field => nameInDatabase(field)).escapeMerge(", ") %>),
             <%_ } -%>
         <%_ }) -%>
     };
@@ -169,7 +169,7 @@ void <%- className %>::Tool::bindValue(<%- className %>& entity, const QString& 
     return entity;
 }
 
-QJsonObject <%- className %>::Tool::toJson(const <%- className %>& entity, QStringList excludeKeys) {
+QJsonObject <%- className %>::Tool::toJson(const <%- className %>& entity, const QStringList& excludeKeys) {
     QJsonObject object;
     <%_ toJsonDeclares.forEach(str => { -%>
     <%- str %>

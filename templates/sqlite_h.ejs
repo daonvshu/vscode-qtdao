@@ -120,7 +120,7 @@ public:
 
         static <%- className %> fromJson(const QJsonObject& object);
 
-        static QJsonObject toJson(const <%- className %>& entity, QStringList excludeKeys = QStringList());
+        static QJsonObject toJson(const <%- className %>& entity, const QStringList& excludeKeys = QStringList());
     };
 
     bool operator==(const <%- className %>& other) const;
@@ -149,6 +149,12 @@ public:
     <%_ } -%>
 
 public:
+    <%_ fields.forEach(field => { -%>
+    //set <%- field.note %>
+    QT_DEPRECATED void set<%- field.name.pascalCase() %>(const <%- field.cppType %>& <%- field.name %>) { this-><%- field.name %> = <%- field.name %>; }
+    //get <%- field.note %>
+    QT_DEPRECATED <%- field.cppType %> get<%- field.name.pascalCase() %>() const { return <%- field.name %>; }
+    <%_ }) -%>
     //set temp data
     void __putExtra(const QString& key, const QVariant& extra) {this->__extra.insert(key, extra);}
     //get function select result, like get "as" field result

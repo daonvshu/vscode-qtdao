@@ -135,7 +135,9 @@ public:
 <%# "-------------- if foreign key link tables is not empty, add 'get' functions by foreign key field --------------" -%>
     <%_ if (foreignKeyLinks.length !== 0) { -%>
         <%_ foreignKeyLinks.forEach(foreignkey => { %>
-    <%- foreignkey.table %>List get<%- foreignkey.table %>By<%- foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge() %>();
+        <%_ let nameByReferFields = foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge(); -%>
+    <%- foreignkey.table %>List get<%- foreignkey.table %>By<%- nameByReferFields %>() const;
+    <%- foreignkey.table %> get<%- foreignkey.table %>UniqueBy<%- nameByReferFields %>() const;
         <%_ }) -%>
     <%_ } -%>
 <%# "-------------- if have only one primary key, add insert/update/remove/select functions use by primary key field --------------" -%>

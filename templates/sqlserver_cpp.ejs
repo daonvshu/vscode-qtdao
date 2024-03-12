@@ -193,19 +193,27 @@ bool <%- className %>::operator==(const <%- className %>& other) const {
 bool <%- className %>::operator!=(const <%- className %>& other) const {
     return !(*this == other);
 }
-
 <%_ if (foreignKeyLinks.length !== 0 || autoincFields.length === 1) { -%>
+<%- '\n' -%>
 #include <dao.h>
 <%_ } -%>
 <%_ if (foreignKeyLinks.length !== 0) { -%>
     <%_ foreignKeyLinks.forEach(foreignkey => { %>
-<%- foreignkey.table %>List <%- className %>::get<%- foreignkey.table %>By<%- foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge() %>() {
+    <%_ let nameByReferFields = foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge(); -%>
+    <%_ let filterCondition = foreignkey.referFields.map((field, index) => index % 2 === 0 ? `field.${field} == ${foreignkey.referFields[index + 1]}` : '').filter(Boolean).join(', ') -%>
+<%- foreignkey.table %>List <%- className %>::get<%- foreignkey.table %>By<%- nameByReferFields %>() const {
     <%- foreignkey.table %>::Fields field;
-    return dao::_select<<%- foreignkey.table %>>().filter(<%- foreignkey.referFields.map((field, index) => index % 2 === 0 ? `field.${field} == ${foreignkey.referFields[index + 1]}` : '').filter(Boolean).join(', ') %>).build().list();
+    return dao::_select<<%- foreignkey.table %>>().filter(<%- filterCondition %>).build().list();
+}
+
+<%- foreignkey.table %> <%- className %>::get<%- foreignkey.table %>UniqueBy<%- nameByReferFields %>() const {
+    <%- foreignkey.table %>::Fields field;
+    return dao::_select<<%- foreignkey.table %>>().filter(<%- filterCondition %>).build().unique();
 }
     <%_ }) -%>
 <%_ } -%>
 <% if (autoincFields.length === 1) { -%>
+<%- '\n' -%>
 void <%- className %>::insert() {
     dao::_insert<<%- className %>>().build().insert(*this);
 }

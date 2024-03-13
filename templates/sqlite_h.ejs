@@ -126,12 +126,26 @@ public:
     bool operator==(const <%- className %>& other) const;
 
     bool operator!=(const <%- className %>& other) const;
-<%# "-------------- if foreign key link tables is not empty, add 'get' functions by foreign key field --------------" -%>
+<%# "-------------- if foreign key link tables is not empty, add extra functions by foreign key field --------------" -%>
     <%_ if (foreignKeyLinks.length !== 0) { -%>
         <%_ foreignKeyLinks.forEach(foreignkey => { %>
         <%_ let nameByReferFields = foreignkey.referFields.filter((field, index) => index % 2 === 1).map(field => field.pascalCase()).merge(); -%>
     <%- foreignkey.table %>List get<%- foreignkey.table %>By<%- nameByReferFields %>() const;
     <%- foreignkey.table %> get<%- foreignkey.table %>UniqueBy<%- nameByReferFields %>() const;
+    
+    void insert<%- foreignkey.table %>With<%- nameByReferFields %>(QList<<%- foreignkey.table %>>& entities) const;
+    void insert<%- foreignkey.table %>With<%- nameByReferFields %>(<%- foreignkey.table %>& entity) const;
+    
+    void clear<%- foreignkey.table %>By<%- nameByReferFields %>() const;
+        <%_ }) -%>
+    <%_ } -%>
+<%# "-------------- if foreign key reference field is not empty, add 'load' functions by fields" -------------- -%>
+    <%_ if (foreignKeys.length !== 0) { -%>
+        <%- '\n' -%>
+        <%_ foreignKeys.forEach(key => { -%>
+            <%_ let referFields = key.referFields.filter((field, index) => index % 2 === 0); -%>
+            <%_ let nameByReferFields = referFields.map(field => field.pascalCase()).merge(); -%>
+    static <%- className %> loadBy<%- nameByReferFields %>(<%- referFields.map(field => `const ${getCppTypeByFieldName(field)}& ${field}`).join(', ') %>);
         <%_ }) -%>
     <%_ } -%>
 <%# "-------------- if have only one primary key, add insert/update/remove/select functions use by primary key field --------------" -%>

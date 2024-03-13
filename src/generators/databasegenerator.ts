@@ -37,6 +37,7 @@ interface EntityTemplateData {
     databaseTbNameFormat: (name: string) => string;
     serializableName: (field: Field) => string;
     checkSerialzableValue: (field: Field) => string;
+    getCppTypeByFieldName: (name: string) => string;
 }
 
 interface DelegateTemplateData {
@@ -74,7 +75,7 @@ export class DatabaseGenerator {
             constructFields: this.constructFields,
             databaseMemberDeclare: this.databaseMemberDeclare,
             autoincFields: this.autoincFields,
-            foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer), ...this.loadTb.refer],
+            foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer).filter(field => !field.referTable.isEmpty()), ...this.loadTb.refer],
             foreignKeyLinks: this.foreignKeyLinks,
 
             fromJsonDeclares: this.fromJsonDeclares,
@@ -86,6 +87,7 @@ export class DatabaseGenerator {
             databaseTbNameFormat: (name: string) => this.wrapWithCheckKeyworks(prefix + name.toLowerCase()),
             serializableName: this.serializableEntityFieldName,
             checkSerialzableValue: this.checkSerialzableValue,
+            getCppTypeByFieldName: (name: string) => this.cppTypeFromFieldName(name),
         };
     };
 
@@ -204,6 +206,11 @@ export class DatabaseGenerator {
             return `dao::deserializeBinaryToCustomType<${field.cppType}>(value.toByteArray())`;
         }
         return `value.value<${field.cppType}>()`;
+    }
+
+    private cppTypeFromFieldName(name: string): string {
+        let field = this.loadTb.fields.find(field => field.name === name) || null;
+        return field?.cppType || '';
     }
 
     private get fromJsonDeclares(): string[] {

@@ -89,9 +89,7 @@ bool <%- className %>::Info::isAutoIncrement(const QString& name) {
 QList<ForeignKey> <%- className %>::Info::getForeignKeys() {
     return {
         <%_ foreignKeys.forEach(key => { -%>
-            <%_ if (!key.referTable.isEmpty()) { -%>
         ForeignKey(QLatin1String("<%- databaseTbNameFormat(key.referTable) %>"), <%- foreignKeyActionToEnum(key.onUpdateAction) %>, <%- foreignKeyActionToEnum(key.onDeleteAction) %>, <%- key.deferrable %>).field(<%- key.referFields.map(field => nameInDatabase(field)).escapeMerge(", ") %>),
-            <%_ } -%>
         <%_ }) -%>
     };
 }
@@ -164,7 +162,8 @@ bool <%- className %>::operator==(const <%- className %>& other) const {
 bool <%- className %>::operator!=(const <%- className %>& other) const {
     return !(*this == other);
 }
-<%_ if (foreignKeyLinks.length !== 0 || autoincFields.length === 1) { -%>
+
+<%_ if (foreignKeyLinks.length !== 0 || autoincFields.length === 1 || foreignKeys.length !== 0) { -%>
 <%- '\n' -%>
 #include <dao.h>
 <%_ } -%>
@@ -180,6 +179,42 @@ bool <%- className %>::operator!=(const <%- className %>& other) const {
 <%- foreignkey.table %> <%- className %>::get<%- foreignkey.table %>UniqueBy<%- nameByReferFields %>() const {
     <%- foreignkey.table %>::Fields field;
     return dao::_select<<%- foreignkey.table %>>().filter(<%- filterCondition %>).build().unique();
+}
+
+void <%- className %>::insert<%- foreignkey.table %>With<%- nameByReferFields %>(QList<<%- foreignkey.table %>>& entities) const {
+    for (auto& entity : entities) {
+        <%_ foreignkey.referFields.forEach((field, index) => { -%>
+            <%_ if (index % 2 === 0) { -%>
+        entity.<%- field %> = <%- foreignkey.referFields[index + 1] %>;
+            <%_ } -%>
+        <%_ }) -%>
+    }
+    dao::_insert<<%- foreignkey.table %>>().build().insert(entities);
+}
+
+void <%- className %>::insert<%- foreignkey.table %>With<%- nameByReferFields %>(<%- foreignkey.table %>& entity) const {
+    <%_ foreignkey.referFields.forEach((field, index) => { -%>
+        <%_ if (index % 2 === 0) { -%>
+    entity.<%- field %> = <%- foreignkey.referFields[index + 1] %>;
+        <%_ } -%>
+    <%_ }) -%>
+    dao::_insert<<%- foreignkey.table %>>().build().insert(entity);
+}
+
+void <%- className %>::clear<%- foreignkey.table %>By<%- nameByReferFields %>() const {
+    <%- foreignkey.table %>::Fields field;
+    return dao::_delete<<%- foreignkey.table %>>().filter(<%- filterCondition %>).build().deleteBy();
+}
+    <%_ }) -%>
+<%_ } -%>
+<%_ if (foreignKeys.length !== 0) { -%>
+    <%_ foreignKeys.forEach(key => { %>
+        <%_ let referFields = key.referFields.filter((field, index) => index % 2 === 0); -%>
+        <%_ let nameByReferFields = referFields.map(field => field.pascalCase()).merge(); -%>
+        <%_ let filterCondition = referFields.map(field => `field.${field} == ${field}`).join(', ') -%>
+<%- className %> <%- className %>::loadBy<%- nameByReferFields %>(<%- referFields.map(field => `const ${getCppTypeByFieldName(field)}& ${field}`).join(', ') %>) {
+    Fields field;
+    return dao::_select<<%- className %>>().filter(<%- filterCondition %>).build().unique();
 }
     <%_ }) -%>
 <%_ } -%>

@@ -5,6 +5,10 @@
     <item name="name" type="text" constraints="primary key" default="text" note="复合主键"/>
     <item name="number" type="real" note="浮点数字" default="10.0"/>
     <item name="hex" type="blob" note="二进制"/>
+    <index type="unique index">
+      <field seq="asc">id</field>
+      <field seq="desc">name</field>
+    </index>
   </tb>
   <tb name="SqliteTest2" declaremetatype="true">
     <item name="id" type="long" default="-1" constraints="primary key" autoincrement="true" note="自增长主键"/>
@@ -28,7 +32,7 @@
   <tb name="SqliteTest3" declaremetatype="true">
     <item name="id" type="long" default="-1" constraints="primary key" autoincrement="true" />
     <item name="tbi1" type="long" default="-1" reftb="SqliteTest1" refitem="id" refondelete="restrict" refonupdate="set_default" note="绑定到SqliteTest1 id"/>
-    <item name="tbi2" type="long" default="-1" reftb="SqliteTest2" refitem="id" deferrable="true" note="绑定到SqliteTest2 id"/>
+    <item name="tbi2" type="long" default="-1" reftb="SqliteTest2" refitem="id" deferrable="true" refvirtual="true" note="绑定到SqliteTest2 id"/>
     <item name="name" type="text"/>
     <item name="size" type="int"/>
     <foreignkey reftb="SqliteTest1" refondelete="restrict" refonupdate="set_default">

@@ -1,7 +1,11 @@
 # Changelog
 
+### 0.1.4
+- Added virtual foreign key references.
+- Added more function utilities for operating on tables related by foreign key references.
+
 ### 0.1.3
-- Added support for foreign keys and functions to retrieve child table data lists.
+- Added support for foreign keys and functions to retrieve child table data lists. Requires QtDao v2.1.1+.
 - Entity class 'get/set' functions have been marked DEPRECATED, use member variable access instead.
 - Introduced direct CRUD operations for entities with a single auto-incrementing field.
 

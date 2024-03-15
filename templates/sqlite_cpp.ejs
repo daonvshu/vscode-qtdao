@@ -88,7 +88,7 @@ bool <%- className %>::Info::isAutoIncrement(const QString& name) {
 
 QList<ForeignKey> <%- className %>::Info::getForeignKeys() {
     return {
-        <%_ foreignKeys.forEach(key => { -%>
+        <%_ foreignKeys.filter(key => !key.refvirtual).forEach(key => { -%>
         ForeignKey(QLatin1String("<%- databaseTbNameFormat(key.referTable) %>"), <%- foreignKeyActionToEnum(key.onUpdateAction) %>, <%- foreignKeyActionToEnum(key.onDeleteAction) %>, <%- key.deferrable %>).field(<%- key.referFields.map(field => nameInDatabase(field)).escapeMerge(", ") %>),
         <%_ }) -%>
     };

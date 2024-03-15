@@ -81,6 +81,7 @@ export class ForeignKey {
     onDeleteAction: string = '';
     referFields: string[] = [];
     deferrable: boolean = false;
+    refvirtual: boolean = false;
 }
 
 export class Table {

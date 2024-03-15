@@ -155,6 +155,7 @@ function resolveContent(object: any): Entity | null {
                 field.refer.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
                 field.refer.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});
                 field.refer.deferrable = readAttributeBool(item, 'deferrable');
+                field.refer.refvirtual = readAttributeBool(item, 'refvirtual');
                 checkUniqueForeignReferenceKey(entity, field.refer);
                 //extra
                 field.bitSize = +readAttribute(item, {key: 'bitsize', defaultValue: '0'});
@@ -218,6 +219,7 @@ function resolveContent(object: any): Entity | null {
                     foreignkeyData.onUpdateAction = readAttribute(item, {key: 'refonupdate', defaultValue: 'notset'});
                     foreignkeyData.onDeleteAction = readAttribute(item, {key: 'refondelete', defaultValue: 'notset'});
                     foreignkeyData.deferrable = readAttributeBool(item, 'deferrable');
+                    foreignkeyData.refvirtual = readAttributeBool(item, 'refvirtual');
                     let fields = item['field'];
                     for (let k = 0; k < fields.length; k++) {
                         let field = fields[k];

@@ -105,5 +105,8 @@ export class Table {
 export class Entity {
     prefix: string = '';
     dbType: string = '';
+    namespace: string = '';
+    alias: string = '';
     tables: Table[] = [];
+    fileIdentity: string = '';
 }

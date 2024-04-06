@@ -30,6 +30,9 @@
 #include "condition/entityfield.h"
 #include "condition/foreignkey.h"
 
+<% if (namespace.isNotEmpty()) { -%>
+namespace <%- namespace%> {
+<% } -%>
 class <%- className %> {
 <%# "-------------- declare metetype --------------" -%>
 <% if (declareMetaType) { -%>
@@ -182,6 +185,9 @@ public:
     }
 };
 typedef QList<<%- className %>> <%- className %>List;
+<% if (namespace.isNotEmpty()) { -%>
+} //end namespace <%- namespace%>
+<% } -%>
 <% if (declareMetaType) { -%>
-Q_DECLARE_METATYPE(<%- className %>);
+Q_DECLARE_METATYPE(<%- namespace.isNotEmpty() ? (namespace + "::" + className) :  className %>)
 <% } %>

@@ -7,22 +7,40 @@
 #include "<%= name.toLowerCase() %>.h"
 <% }) -%>
 
-#include "dao.h"
-
 QTDAO_USING_NAMESPACE
+
+#if !defined(QTDAO_VERSION) || (QTDAO_VERSION <= QTDAO_VERSION_CHECK(2, 1, 2))
 
 namespace Dao<%= typeName %> {
     void <%= typeName %>EntityDelegate::createEntityTables() {
         <%_ entityTbNames.forEach(name => { -%>
-        globalConfig->getClient()->createTable<(int)ConfigType::<%= typeName %>, <%= name %>>();
+        globalConfig->getClient()->createTable<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>();
         <%_ }) -%>
     }
 
     void <%= typeName %>EntityDelegate::entityTablesUpgrade(int oldVer, int newVer) {
         <%_ entityTbNames.forEach(name => { -%>
-        globalConfig->getClient()->tableUpgrade<(int)ConfigType::<%= typeName %>, <%= name %>>(oldVer, newVer);
+        globalConfig->getClient()->tableUpgrade<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>(oldVer, newVer);
         <%_ }) -%>
     }
 
     const int entity<%= typeName %>DelegateId = qRegisterMetaType<<%= typeName %>EntityDelegate*>();
 }
+
+#else
+
+static int id = ConfigSelector::registerConfig(<%- alias %>, new <%= delegateName %>);
+
+void <%= delegateName %>::createEntityTables(dao::ConfigBuilder* config) {
+    <%_ entityTbNames.forEach(name => { -%>
+    config->getClient()->createTable<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>();
+    <%_ }) -%>
+}
+
+void <%= delegateName %>::entityTablesUpgrade(dao::ConfigBuilder* config, int oldVer, int newVer) {
+    <%_ entityTbNames.forEach(name => { -%>
+    config->getClient()->tableUpgrade<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>(oldVer, newVer);
+    <%_ }) -%>
+}
+
+#endif

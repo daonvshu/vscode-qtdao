@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import fs = require('fs');
+import crypto = require('crypto')
 
 import { parseString } from 'xml2js';
 import { Entity, Field, ForeignKey, Index, Table } from './generators/entity';
@@ -12,7 +13,7 @@ export function load(filePath: string): Promise<Entity | null> {
                 vscode.window.showErrorMessage(err.message);
                 resolve(null);
             } else {
-                resolve(resolveContent(content));
+                resolve(resolveContent(content, filePath));
             }
         });
     });
@@ -98,7 +99,7 @@ function checkUniqueForeignReferenceKey(entity: Entity, foreignkey: ForeignKey) 
     }
 }
 
-function resolveContent(object: any): Entity | null {
+function resolveContent(object: any, filePath: string): Entity | null {
     //console.log(object);
     try {
         let entity = new Entity();
@@ -108,6 +109,12 @@ function resolveContent(object: any): Entity | null {
             throw Error('the root name is not dao!');
         }
         entity.prefix = readAttributeDefaultEmpty(dao, 'prefix');
+        entity.namespace = readAttributeDefaultEmpty(dao, 'namespace');
+        entity.alias = readAttributeDefaultEmpty(dao, 'alias');
+
+        const hash = crypto.createHash('md5');
+        hash.update(fs.readFileSync(filePath));
+        entity.fileIdentity = hash.digest('hex').substring(0, 12).toUpperCase();
 
         entity.dbType = readAttribute(dao, {key: 'db'});
         if (['sqlite', 'mysql', 'sqlserver'].indexOf(entity.dbType) === -1) {

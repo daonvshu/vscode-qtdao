@@ -6,6 +6,10 @@
 
 #include <qobject.h>
 
+#include "dao.h"
+
+#if !defined(QTDAO_VERSION) || (QTDAO_VERSION <= QTDAO_VERSION_CHECK(2, 1, 2))
+
 namespace Dao<%= typeName %> {
     class <%= typeName %>EntityDelegate : public QObject {
         Q_OBJECT
@@ -18,4 +22,14 @@ namespace Dao<%= typeName %> {
         Q_INVOKABLE void entityTablesUpgrade(int oldVer, int newVer);
     };
 }
-Q_DECLARE_METATYPE(Dao<%= typeName %>::<%= typeName %>EntityDelegate*);
+Q_DECLARE_METATYPE(Dao<%= typeName %>::<%= typeName %>EntityDelegate*)
+
+#else
+
+class <%= delegateName %> : public dao::EntityConfigDelegate {
+public:
+    void createEntityTables(dao::ConfigBuilder* config) override;
+    void entityTablesUpgrade(dao::ConfigBuilder* config, int oldVer, int newVer) override;
+};
+
+#endif

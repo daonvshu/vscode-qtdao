@@ -14,6 +14,7 @@ interface EntityTemplateFieldMember {
 
 interface EntityTemplateData {
     className: string;
+    namespace: string;
     customTypeHeaders: string[];
     fields: Field[];
     indexes: Index[];
@@ -42,7 +43,10 @@ interface EntityTemplateData {
 
 interface DelegateTemplateData {
     typeName: string;
+    namespace: string;
+    alias: string;
     entityTbNames: string[];
+    delegateName: string;
 }
 
 export class DatabaseGenerator {
@@ -64,6 +68,7 @@ export class DatabaseGenerator {
     protected getEntityTemplateData(prefix: string): EntityTemplateData {
         return {
             className: this.loadTb.name,
+            namespace: this.entity.namespace,
             customTypeHeaders: this.customTypeHeaders,
             fields: this.loadTb.fields,
             indexes: this.loadTb.indexes,
@@ -94,7 +99,10 @@ export class DatabaseGenerator {
     protected getDelegateData(): DelegateTemplateData {
         return {
             typeName: this.getSqlTypeName(),
+            namespace: this.entity.namespace,
+            alias: `"${this.getSqlTypeName().toLowerCase()}_"` + (this.entity.alias.isEmpty() ? "" : `"${this.entity.alias}"`),
             entityTbNames: this.entity.tables.map(tb => tb.name),
+            delegateName: 'EntityDelegate_' + this.entity.fileIdentity,
         };
     };
 

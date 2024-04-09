@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.1.6
+- Added 'namespace' and 'alias' attribute support for the 'dao' node.
+- Regenerated configure delegate to support multi-database queries. Requires QtDao v2.2.0+.
+
 ### 0.1.5
 - Remove '#program once' in cpp file.
 

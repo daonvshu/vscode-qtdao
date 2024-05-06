@@ -384,7 +384,6 @@ export class DatabaseGenerator {
         let data = this.getDelegateData();
         let changed = this.renderTemplate("entity.pri", "pri.ejs", data);
         changed = this.renderTemplate("entity.cmake", "cmake.ejs", data) || changed;
-        changed = this.renderTemplate(".gitignore", "gitignore.ejs", data) || changed;
         return changed;
     }
 

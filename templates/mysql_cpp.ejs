@@ -3,7 +3,7 @@
  ** Don't modify this file!
 ********************************************************************************/
 #include "<%- className.toLowerCase() %>.h"
-<%_ if (foreignKeyLinks.length !== 0 || autoincFields.length === 1 || foreignKeys.length !== 0) { -%>
+<%_ if (foreignKeyLinks.length !== 0 || primaryKeyFields.length !== 0 || foreignKeys.length !== 0) { -%>
 <%- '\n' -%>
 #include <dao.h>
 <%_ } -%>

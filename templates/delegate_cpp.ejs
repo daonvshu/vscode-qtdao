@@ -9,26 +9,6 @@
 
 QTDAO_USING_NAMESPACE
 
-#if !defined(QTDAO_VERSION) || (QTDAO_VERSION <= QTDAO_VERSION_CHECK(2, 1, 2))
-
-namespace Dao<%= typeName %> {
-    void <%= typeName %>EntityDelegate::createEntityTables() {
-        <%_ entityTbNames.forEach(name => { -%>
-        globalConfig->getClient()->createTable<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>();
-        <%_ }) -%>
-    }
-
-    void <%= typeName %>EntityDelegate::entityTablesUpgrade(int oldVer, int newVer) {
-        <%_ entityTbNames.forEach(name => { -%>
-        globalConfig->getClient()->tableUpgrade<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>(oldVer, newVer);
-        <%_ }) -%>
-    }
-
-    const int entity<%= typeName %>DelegateId = qRegisterMetaType<<%= typeName %>EntityDelegate*>();
-}
-
-#else
-
 static int id = ConfigSelector::registerConfig(<%- alias %>, new <%= delegateName %>);
 
 void <%= delegateName %>::createEntityTables(dao::ConfigBuilder* config) {
@@ -42,5 +22,3 @@ void <%= delegateName %>::entityTablesUpgrade(dao::ConfigBuilder* config, int ol
     config->getClient()->tableUpgrade<(int)ConfigType::<%= typeName %>, <%= namespace.isNotEmpty() ? (namespace + "::" + name) : name %>>(oldVer, newVer);
     <%_ }) -%>
 }
-
-#endif

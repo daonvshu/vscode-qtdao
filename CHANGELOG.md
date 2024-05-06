@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.7
+- Fix generator for CRUD operations
+
 ### 0.1.6
 - Added 'namespace' and 'alias' attribute support for the 'dao' node.
 - Regenerated configure delegate to support multi-database queries. Requires QtDao v2.2.0+.

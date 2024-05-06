@@ -154,7 +154,7 @@ public:
         <%_ }) -%>
     <%_ } -%>
 <%# "-------------- if have only one primary key, add insert/update/remove/select functions use by primary key field --------------" -%>
-    <%_ if (autoincFields.length === 1) { -%>
+    <%_ if (primaryKeyFields.length !== 0) { -%>
     <%- '\n' -%>
     void insert();
 
@@ -162,11 +162,11 @@ public:
 
     void select();
 
-    static <%- className %> select(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
+    static <%- className %> select(<%- primaryKeyFields.map(field => `const ${field.cppType}& ${field.name}`).join(', ') %>);
 
     void remove() const;
 
-    static void remove(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>);
+    static void remove(<%- primaryKeyFields.map(field => `const ${field.cppType}& ${field.name}`).join(', ') %>);
     <%_ } -%>
 
 public:

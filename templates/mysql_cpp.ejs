@@ -227,7 +227,7 @@ void <%- className %>::clear<%- foreignkey.table %>By<%- nameByReferFields %>() 
 }
     <%_ }) -%>
 <%_ } -%>
-<% if (autoincFields.length === 1) { -%>
+<% if (primaryKeyFields.length !== 0) { -%>
 <%- '\n' -%>
 void <%- className %>::insert() {
     dao::_insert<<%- className %>>().build().insert(*this);
@@ -237,23 +237,24 @@ void <%- className %>::update() const {
     dao::_update<<%- className %>>().build().update(*this);
 }
 
+<%_ let pkFilter = primaryKeyFields.map(field => `field.${field.name} == ${field.name}`).join(', ') -%>
 void <%- className %>::select() {
     Fields field;
-    *this = dao::_select<<%- className %>>().filter(field.<%- autoincFields[0].name %> == <%- autoincFields[0].name %>).build().unique();
+    *this = dao::_select<<%- className %>>().filter(<%- pkFilter %>).build().unique();
 }
 
-<%- className %> <%- className %>::select(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>) {
+<%- className %> <%- className %>::select(<%- primaryKeyFields.map(field => `const ${field.cppType}& ${field.name}`).join(', ') %>) {
     Fields field;
-    return dao::_select<<%- className %>>().filter(field.<%- autoincFields[0].name %> == <%- autoincFields[0].name %>).build().unique();
+    return dao::_select<<%- className %>>().filter(<%- pkFilter %>).build().unique();
 }
 
 void <%- className %>::remove() const {
     dao::_delete<<%- className %>>().build().deleteBy(*this);
 }
 
-void <%- className %>::remove(const <%- autoincFields[0].cppType %>& <%- autoincFields[0].name %>) {
+void <%- className %>::remove(<%- primaryKeyFields.map(field => `const ${field.cppType}& ${field.name}`).join(', ') %>) {
     Fields field;
-    dao::_delete<<%- className %>>().filter(field.<%- autoincFields[0].name %> == <%- autoincFields[0].name %>).build().deleteBy();
+    dao::_delete<<%- className %>>().filter(<%- pkFilter %>).build().deleteBy();
 }
 <% } -%>
 <% if (namespace.isNotEmpty()) { -%>

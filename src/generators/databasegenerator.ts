@@ -26,6 +26,7 @@ interface EntityTemplateData {
     constructFields: Field[][];
     databaseMemberDeclare: string[];
     autoincFields: Field[];
+    primaryKeyFields: Field[];
     foreignKeys: ForeignKey[];
     foreignKeyLinks: ForeignKey[];
 
@@ -80,6 +81,7 @@ export class DatabaseGenerator {
             constructFields: this.constructFields,
             databaseMemberDeclare: this.databaseMemberDeclare,
             autoincFields: this.autoincFields,
+            primaryKeyFields: this.primaryKeyFields,
             foreignKeys: [...this.fieldWithoutTransient.map(field => field.refer).filter(field => !field.referTable.isEmpty()), ...this.loadTb.refer],
             foreignKeyLinks: this.foreignKeyLinks,
 
@@ -153,6 +155,10 @@ export class DatabaseGenerator {
 
     private get autoincFields(): Field[] {
         return this.fieldWithoutTransient.filter(field => field.autoIncrement);
+    }
+
+    private get primaryKeyFields(): Field[] {
+        return this.fieldWithoutTransient.filter(field => field.constraint === 'primary key');
     }
 
     private get foreignKeyLinks(): ForeignKey[] {

@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.1.8
+- Remove .gitignore file.
+- Update configure register file, remove old register functions.
+
 ### 0.1.7
 - Fix generator for CRUD operations
 

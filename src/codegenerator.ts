@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import path = require('path');
 import { load } from './configloader';
 import { SqliteGenerator } from './generators/sqlitegenerator';
-import { MysqlGeneator } from './generators/mysqlgenerator';
+import { MysqlGenerator } from './generators/mysqlgenerator';
 import { SqlServerGenerator } from './generators/sqlservergenerator';
+import { PSqlGenerator } from './generators/psqlgenerator';
 
 export function generateEntityCode(filePath: string, templateDir: string) {
     vscode.window.withProgress({
@@ -29,10 +30,13 @@ export function generateEntityCode(filePath: string, templateDir: string) {
                         changed = new SqliteGenerator(fileDir, entity, templateDir).generate();
                         break;
                     case 'mysql':
-                        changed = new MysqlGeneator(fileDir, entity, templateDir).generate();
+                        changed = new MysqlGenerator(fileDir, entity, templateDir).generate();
                         break;
                     case 'sqlserver':
                         changed = new SqlServerGenerator(fileDir, entity, templateDir).generate();
+                        break;
+                    case 'psql':
+                        changed = new PSqlGenerator(fileDir, entity, templateDir).generate();
                         break;
                 }
                 if (!changed) {

@@ -1,8 +1,22 @@
 import { DatabaseGenerator } from "./databasegenerator";
 import { keywordsOrReservedWords } from "../utils/keywords";
-import { TypeReadInterface } from "./entity";
+import { Entity, Field, ForeignKey, Index, Table, TypeReadInterface } from "./entity";
 
-export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterface {
+export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterface {
+
+    constructor(outputPath: string, entity: Entity, templateDir: string) {
+        super(outputPath, entity, templateDir);
+
+        //check auto increment field type
+        const autoIncrementTypes = ['smallserial', 'serial', 'bigserial'];
+        this.entity.tables.forEach(tb => {
+            tb.fields.forEach(field => {
+                if (autoIncrementTypes.includes(field.type)) {
+                    field.autoIncrement = true;
+                }
+            });
+        });
+    }
 
     public generate(): boolean {
         let changed = this.generateEntities(this);
@@ -13,38 +27,38 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
 
     getFieldCppType(fieldType: string): string {
         switch(fieldType) {
-            case 'tinyint':
+            case 'bit':
                 return 'char';
             case 'smallint':
+            case 'smallserial':
                 return 'short';
-            case 'mediumint':
-            case 'int':
+            case 'integer':
+            case 'serial':
                 return 'int';
             case 'bigint':
+            case 'bigserial':
                 return 'qint64';
-            case 'float':
-            case 'double':
             case 'decimal':
+            case 'numeric':
+            case 'double':
+            case 'real':
                 return 'qreal';
+            case 'boolean':
+                return 'bool';
             case 'date':
                 return 'QDate';
             case 'time':
-                return 'QString'; //see qsql_mysql.cpp#313
-            case 'datetime':
+                return 'QTime';
             case 'timestamp':
                 return 'QDateTime';
+            case 'interval':
+                return 'QString';
             case 'char':
                 return 'QChar';
             case 'varchar':
-            case 'tinytext':
             case 'text':
-            case 'mediumtext':
-            case 'longtext':
                 return 'QString';
-            case 'tinyblob':
-            case 'blob':
-            case 'mediumblob':
-            case 'longblob':
+            case 'bytea':
                 return 'QByteArray';
         }
         return 'unknown';
@@ -58,7 +72,7 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
 
         switch(fieldType) {
             case 'date':
-                if (defV === 'now') {
+                if (defV === 'now' || defV === 'CURRENT_DATE') {
                     return 'QDate::currentDate()';
                 }
                 if (defaultValue.contains('QDate')) {
@@ -66,36 +80,26 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
                 }
                 return `QDate::fromString("${defaultValue}")`;
             case 'time':
-                if (defV === 'now') {
+                if (defV === 'now' || defV === 'CURRENT_TIME') {
                     return 'QTime::currentTime().toString("HH:mm:ss")';
                 }
                 if (defaultValue.contains('QTime')) {
                     return defaultValue;
                 }
                 return `"${defaultValue}"`;
-            case 'datetime':
             case 'timestamp':
-                if (defV === 'now') {
+                if (defV === 'now' || defV === 'CURRENT_TIMESTAMP') {
                     return 'QDateTime::currentDateTime()';
                 }
                 if (defaultValue.contains('QDateTime')) {
                     return defaultValue;
                 }
-                defV = defaultValue.toUpperCase();
-                if (defV.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
-                    return 'QDateTime()';
-                }
-                if (defV.startsWith('CURRENT_TIMESTAMP')) {
-                    return 'QDateTime::currentDateTime()';
-                }
                 return `QDateTime::fromString("${defaultValue}")`;
             case 'char':
                 return `'${defaultValue}'`;
             case 'varchar':
-            case 'tinytext':
             case 'text':
-            case 'mediumtext':
-            case 'longtext':
+            case 'interval':
                 if (defV === 'empty') {
                     return 'QString()';
                 }
@@ -106,10 +110,7 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
                     return defaultValue;
                 }
                 return `"${defaultValue}"`;
-            case 'tinyblob':
-            case 'blob':
-            case 'mediumblob':
-            case 'longblob':
+            case 'bytea':
                 if (defV === 'empty') {
                     return 'QByteArray()';
                 }
@@ -131,43 +132,48 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
         }
 
         switch(fieldType) {
-            case 'tinyint':
+            case 'bit':
             case 'smallint':
-            case 'mediumint':
-            case 'int':
+            case 'smallserial':
+            case 'integer':
+            case 'serial':
             case 'bigint':
-            case 'float':
-            case 'double':
+            case 'bigserial':
             case 'decimal':
+            case 'numeric':
+            case 'double':
+            case 'real':
+            case 'boolean':
                 return defaultValue;
             case 'date':
-            case 'time':
-                if (defV === 'now') {
-                    return 'null';
+                if (defV === 'now' || defV === 'CURRENT_DATE') {
+                    return 'CURRENT_DATE';
                 }
-                if (defaultValue.contains('QTime') || defaultValue.contains('QDate')) {
+                if (defaultValue.contains('QDate')) {
                     return 'null';
                 }
                 return `'${defaultValue}'`;
-            case 'datetime':
+            case 'time':
+                if (defV === 'now' || defV === 'CURRENT_TIME') {
+                    return 'CURRENT_TIME';
+                }
+                if (defaultValue.contains('QTime')) {
+                    return 'null';
+                }
+                return `'${defaultValue}'`;
             case 'timestamp':
-                if (defV === 'now') {
+                if (defV === 'now' || defV === 'CURRENT_TIMESTAMP') {
                     return 'CURRENT_TIMESTAMP';
                 }
                 if (defaultValue.contains('QDateTime')) {
                     return 'null';
                 }
-                defV = defaultValue.toUpperCase();
-                if (defV.startsWith('NULL ON UPDATE CURRENT_TIMESTAMP')) {
-                    return defaultValue;
-                }
-                if (defV.startsWith('CURRENT_TIMESTAMP')) {
-                    return defaultValue;
-                }
                 return `'${defaultValue}'`;
             case 'char':
                 return `'${defaultValue}'`;
             case 'varchar':
+            case 'text':
+            case 'interval':
                 if (defV === 'empty') {
                     return "''";
                 }
@@ -187,24 +193,24 @@ export class MysqlGenerator extends DatabaseGenerator implements TypeReadInterfa
     }
 
     getBinaryType(): string {
-        return 'blob';
+        return 'bytea';
     }
 
     protected getComment(note: string): string {
-        return ` comment '${note}'`;
+        return '';
     }
 
     protected getAutoIncrementStatement(): string {
-        return 'auto_increment';
+        return '';
     }
 
     protected getSqlTypeName(): string {
-        return 'Mysql';
+        return 'PSql';
     }
 
     protected wrapWithCheckKeyworks(name: string): string {
-        if (keywordsOrReservedWords["sqlite"].contains(name.toUpperCase())) {
-            return `\`${name}\``;
+        if (keywordsOrReservedWords["psql"].contains(name.toUpperCase())) {
+            return `\"${name}\"`;
         }
         return name;
     }

@@ -98,12 +98,12 @@ export class DatabaseGenerator {
         };
     };
 
-    protected getDelegateData(): DelegateTemplateData {
+    protected getDelegateData(ignoreManual: boolean): DelegateTemplateData {
         return {
             typeName: this.getSqlTypeName(),
             namespace: this.entity.namespace,
             alias: `"${this.getSqlTypeName().toLowerCase()}_"` + (this.entity.alias.isEmpty() ? "" : `"${this.entity.alias}"`),
-            entityTbNames: this.entity.tables.map(tb => tb.name),
+            entityTbNames: this.entity.tables.filter(tb => !ignoreManual || (ignoreManual && !tb.createManual)).map(tb => tb.name),
             delegateName: 'EntityDelegate_' + this.entity.fileIdentity,
         };
     };
@@ -374,14 +374,14 @@ export class DatabaseGenerator {
 
     protected generateDelegateFiles(): boolean {
         let fileName = this.getSqlTypeName().toLowerCase() + "entityinclude";
-        let data = this.getDelegateData();
+        let data = this.getDelegateData(true);
         let changed = this.renderTemplate(fileName + ".h", "delegate_h.ejs", data);
         changed = this.renderTemplate(fileName + ".cpp", "delegate_cpp.ejs", data) || changed;
         return changed;
     }
 
     protected generateConfigFiles(): boolean {
-        let data = this.getDelegateData();
+        let data = this.getDelegateData(false);
         let changed = this.renderTemplate("entity.pri", "pri.ejs", data);
         changed = this.renderTemplate("entity.cmake", "cmake.ejs", data) || changed;
         return changed;

@@ -95,6 +95,8 @@ export class Table {
 
     engine: string = ''; //mysql engine
 
+    createManual: boolean = false;
+
     refer: ForeignKey[] = [];
 
     set typeInterface(reader: TypeReadInterface) {

@@ -134,6 +134,7 @@ function resolveContent(object: any, filePath: string): Entity | null {
             
             table.metaType = readAttributeBool(tb, 'declaremetatype');
             table.engine = readAttributeDefaultEmpty(tb, 'engine');
+            table.createManual = readAttributeBool(tb, 'createmanual');
 
             let items = tb['item'];
             for (let j = 0; j < items.length; j++) {

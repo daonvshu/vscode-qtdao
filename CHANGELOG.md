@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.9
+- Add object serialization function.
+
 ### 0.1.8
 - Remove .gitignore file.
 - Update configure register file, remove old register functions.

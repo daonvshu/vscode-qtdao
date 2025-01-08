@@ -8,6 +8,7 @@
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qjsonobject.h>
+#include <qdatastream.h>
 <%# "-------------- custom type header --------------" -%>
 <% if (customTypeHeaders.length !== 0) { -%>
 <%- '\n' -%>
@@ -191,3 +192,5 @@ typedef QList<<%- className %>> <%- className %>List;
 <% if (declareMetaType) { -%>
 Q_DECLARE_METATYPE(<%- namespace.isNotEmpty() ? (namespace + "::" + className) :  className %>)
 <% } %>
+extern QDataStream& operator<<(QDataStream& stream, const <%- className %>& data);
+extern QDataStream& operator>>(QDataStream& stream, <%- className %>& data);

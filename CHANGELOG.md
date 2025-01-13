@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.2.0
+- No changes.
+
 ### 0.1.9
 - Add object serialization function.
 

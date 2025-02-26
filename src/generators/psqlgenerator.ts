@@ -40,7 +40,7 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
                 return 'qint64';
             case 'decimal':
             case 'numeric':
-            case 'double':
+            case 'double precision':
             case 'real':
                 return 'qreal';
             case 'boolean':
@@ -81,14 +81,14 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
                 return `QDate::fromString("${defaultValue}")`;
             case 'time':
                 if (defV === 'now' || defV === 'CURRENT_TIME') {
-                    return 'QTime::currentTime().toString("HH:mm:ss")';
+                    return 'QTime::currentTime()';
                 }
                 if (defaultValue.contains('QTime')) {
                     return defaultValue;
                 }
-                return `"${defaultValue}"`;
+                return `QTime::fromString("${defaultValue}")`;
             case 'timestamp':
-                if (defV === 'now' || defV === 'CURRENT_TIMESTAMP') {
+                if (defV === 'now' || defV.startsWith('CURRENT_TIMESTAMP')) {
                     return 'QDateTime::currentDateTime()';
                 }
                 if (defaultValue.contains('QDateTime')) {
@@ -133,6 +133,7 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
 
         switch(fieldType) {
             case 'bit':
+                return `B'${defaultValue}'`;
             case 'smallint':
             case 'smallserial':
             case 'integer':
@@ -141,7 +142,7 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
             case 'bigserial':
             case 'decimal':
             case 'numeric':
-            case 'double':
+            case 'double precision':
             case 'real':
             case 'boolean':
                 return defaultValue;
@@ -162,8 +163,11 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
                 }
                 return `'${defaultValue}'`;
             case 'timestamp':
-                if (defV === 'now' || defV === 'CURRENT_TIMESTAMP') {
+                if (defV === 'now') {
                     return 'CURRENT_TIMESTAMP';
+                }
+                if (defaultValue.startsWith('CURRENT_TIMESTAMP')) {
+                    return defaultValue;
                 }
                 if (defaultValue.contains('QDateTime')) {
                     return 'null';

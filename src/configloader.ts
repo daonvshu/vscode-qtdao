@@ -8,7 +8,7 @@ import { Entity, Field, ForeignKey, Index, Table } from './generators/entity';
 export function load(filePath: string): Promise<Entity | null> {
     var fileContent = fs.readFileSync(filePath).toString();
     return new Promise<Entity | null>(resolve => {
-        parseString(fileContent, (err: Error, content: any) => {
+        parseString(fileContent, (err: Error | null, content: any) => {
             if (err) {
                 vscode.window.showErrorMessage(err.message);
                 resolve(null);
@@ -117,7 +117,7 @@ function resolveContent(object: any, filePath: string): Entity | null {
         entity.fileIdentity = hash.digest('hex').substring(0, 12).toUpperCase();
 
         entity.dbType = readAttribute(dao, {key: 'db'});
-        if (['sqlite', 'mysql', 'sqlserver'].indexOf(entity.dbType) === -1) {
+        if (['sqlite', 'mysql', 'sqlserver', 'psql'].indexOf(entity.dbType) === -1) {
             throw Error('unknown database type declaration');
         }
 

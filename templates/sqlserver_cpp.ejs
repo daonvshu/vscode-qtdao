@@ -282,7 +282,7 @@ void <%- className %>::remove(<%- primaryKeyFields.map(field => `const ${field.c
 } //end namespace <%- namespace%>
 <% } -%>
 
-QDataStream& operator<<(QDataStream& stream, const <%- className %>& data) {
+QDataStream& operator<<(QDataStream& stream, const <%- namespace.isNotEmpty() ? (namespace + "::" + className) : className %>& data) {
     stream
     <%_ fieldWithoutTransient.forEach(field => { -%>
         << data.<%- field.name %>
@@ -291,7 +291,7 @@ QDataStream& operator<<(QDataStream& stream, const <%- className %>& data) {
     return stream;
 }
 
-QDataStream& operator>>(QDataStream& stream, <%- className %>& data) {
+QDataStream& operator>>(QDataStream& stream, <%- namespace.isNotEmpty() ? (namespace + "::" + className) : className %>& data) {
     stream
     <%_ fieldWithoutTransient.forEach(field => { -%>
         >> data.<%- field.name %>

@@ -214,7 +214,7 @@ export class PSqlGenerator extends DatabaseGenerator implements TypeReadInterfac
 
     protected wrapWithCheckKeyworks(name: string): string {
         if (keywordsOrReservedWords["psql"].contains(name.toUpperCase())) {
-            return `\"${name}\"`;
+            return `\\"${name}\\"`;
         }
         return name;
     }

@@ -2,7 +2,7 @@
 	"name": "vscode-qtdao",
 	"displayName": "QtDao",
 	"description": "code generator plugin for qtdao",
-	"version": "0.2.0",
+	"version": "0.2.2",
 	"publisher": "daonvshu",
 	"repository": {
 		"url": "https://github.com/daonvshu/vscode-qtdao"
@@ -12,7 +12,7 @@
 		"name": "daonvshu"
 	},
 	"engines": {
-		"vscode": "^1.61.0"
+		"vscode": "^1.97.0"
 	},
 	"categories": [
 		"Other"

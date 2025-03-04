@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.2.2
+- Fix serialization function generating error outside namespace.
+
+### 0.2.1
+- Add PostgreSQL support.
+
 ### 0.2.0
 - No changes.
 
